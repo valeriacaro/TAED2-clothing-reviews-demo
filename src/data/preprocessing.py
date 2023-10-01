@@ -1,5 +1,4 @@
 import pandas as pd
-import altair as alt
 import nltk
 from nltk.corpus import stopwords
 import string
