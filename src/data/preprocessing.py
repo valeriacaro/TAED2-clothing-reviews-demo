@@ -6,25 +6,6 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import SnowballStemmer
 import kaggle
 
-def download_df():
-    """
-    Downloads kaggle dataset and saves it in the repository.
-
-    Args:
-        None
-
-    Returns:
-        None
-    """
-    download_dir = "/Users/claudialen/Dropbox/UNI/7eQuadri/TAED2/clothing-reviews/data/external"
-    username = "nicapotato"
-    dataset_name = "womens-ecommerce-clothing-reviews"
-
-    # Download the dataset in CSV format
-    kaggle.api.dataset_download_files(f"{username}/{dataset_name}", path=download_dir, unzip=True)
-
-
-
 def create_df() -> pd.DataFrame:
     """
         Reads data from csv and creates a DataFrame from it.
