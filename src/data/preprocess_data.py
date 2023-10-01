@@ -2,7 +2,9 @@ from get_and_save_data import *
 
 GET_DATA_FROM_SOURCE = True
 
+
 def dropping(dataframe: pd.DataFrame) -> pd.DataFrame:
+
     """
         Erases all non-necessary columns from the DataFrame.
 
@@ -12,14 +14,19 @@ def dropping(dataframe: pd.DataFrame) -> pd.DataFrame:
         Returns:
             dataframe: The changed DataFrame.
     """
+
     dataframe.drop(
-        ["Title", "Positive Feedback Count", "Division Name", "Department Name", "Class Name", "Age",
-         "Clothing ID", "Rating"], axis=1, inplace=True)
+        ["Title", "Positive Feedback Count", "Division Name",
+         "Department Name", "Class Name", "Age",
+         "Clothing ID", "Rating"], axis=1, inplace=True
+    )
     dataframe.drop_duplicates(inplace=True)
+
     return dataframe
 
 
 def binarization(dataframe: pd.DataFrame) -> pd.DataFrame:
+
     """
         Takes the Ratings variable and binarizes its values to 1 or 0.
 
@@ -29,11 +36,17 @@ def binarization(dataframe: pd.DataFrame) -> pd.DataFrame:
         Returns:
             dataframe: Modified DataFrame.
     """
+
     dataframe.loc[dataframe['Rating'] <= 4, 'Recommended IND'] = 0
-    dataframe.rename(columns={'Recommended IND': 'Top Product'}, inplace=True)
+    dataframe.rename(
+        columns={'Recommended IND': 'Top Product'}, inplace=True
+    )
+
     return dataframe
 
+
 def clean_df(dataframe: pd.DataFrame) -> pd.DataFrame:
+
     """
         Transforms a whole dataframe into a simplified version
         that only includes variables that will be used and
@@ -50,7 +63,6 @@ def clean_df(dataframe: pd.DataFrame) -> pd.DataFrame:
     dataframe = dropping(dataframe)
 
     return dataframe
-
 
 
 if __name__ == '__main__':
