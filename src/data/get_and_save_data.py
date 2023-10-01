@@ -3,7 +3,7 @@ import json
 import os
 import pandas as pd
 
-def get_data_from_source():
+def get_data_from_source() -> None:
     """
     Downloads kaggle dataset and saves it in a given path.
 
@@ -54,6 +54,16 @@ def save_data_to_local(
         path_to_save: str,
         dataframe: pd.DataFrame
 ) -> None:
+    """
+        Saves a dataframe on a certain path
+
+        Args:
+            path_to_save: Path where we want data to be stored
+            dataframe: pd.DataFrame with data
+
+        Returns:
+            None
+    """
 
     dataframe.to_csv(path_to_save, index=False)
 

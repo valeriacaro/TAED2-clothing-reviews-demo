@@ -35,14 +35,24 @@ def get_stemmed_text(dataframe) -> pd.DataFrame:
 
                 Returns:
                     dataframe: Modified DataFrame.
-        """
+    """
     stem = SnowballStemmer('english')
     dataframe['Stemmed Review Text'] = dataframe['Review Text'].apply(lambda text: " ".join([stem.stem(w) for w in text]))
     return dataframe
 
-def process_df(
-        dataframe: pd.DataFrame
-) -> pd.DataFrame:
+def process_df(dataframe: pd.DataFrame) -> pd.DataFrame:
+    """
+        Transforms a dataframe with a text column into a
+        processed version that includes two versions of
+        the text: a tokenized one, and a tokenized plus
+        stemmed one
+
+        Args:
+            dataframe (DataFrame): Input DataFrame to be modified.
+
+        Returns:
+            dataframe: Modified DataFrame.
+    """
 
     dataframe = tokenization(dataframe)
     dataframe = get_stemmed_text(dataframe)
