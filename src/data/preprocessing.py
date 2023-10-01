@@ -4,20 +4,9 @@ from nltk.corpus import stopwords
 import string
 from nltk.tokenize import word_tokenize
 from nltk.stem import SnowballStemmer
-import kaggle
+import download_data
+import data_from_folder
 
-def create_df() -> pd.DataFrame:
-    """
-        Reads data from csv and creates a DataFrame from it.
-
-        Args:
-            None.
-
-        Returns:
-            DataFrame: The DataFrame with the csv file's data.
-    """
-    dataframe = pd.read_csv("/Users/claudialen/Dropbox/UNI/7eQuadri/TAED2/clothing-reviews/data/external/Womens Clothing E-Commerce Reviews.csv")
-    return dataframe
 
 def dropping(dataframe) -> pd.DataFrame:
     """
