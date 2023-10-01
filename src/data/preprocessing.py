@@ -114,7 +114,6 @@ def new_dataset(dataframe):
         None.
     """
     csv_file_path = "/Users/claudialen/Dropbox/UNI/7eQuadri/TAED2/clothing-reviews/data/interim/preprocessed_data.csv"
-
     dataframe.to_csv(csv_file_path, index=False)
 
 
