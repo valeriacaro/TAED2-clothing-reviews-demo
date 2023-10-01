@@ -34,6 +34,17 @@ def binarization(dataframe: pd.DataFrame) -> pd.DataFrame:
     return dataframe
 
 def clean_df(dataframe: pd.DataFrame) -> pd.DataFrame:
+    """
+        Transforms a whole dataframe into a simplified version
+        that only includes variables that will be used and
+        a clear target column
+
+        Args:
+            dataframe (DataFrame): Input DataFrame to be modified.
+
+        Returns:
+            dataframe: Modified DataFrame.
+    """
 
     dataframe = binarization(dataframe)
     dataframe = dropping(dataframe)
