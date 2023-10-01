@@ -82,6 +82,7 @@ def tokenization(dataframe) -> pd.DataFrame:
     """
     nltk.download("punkt")
     nltk.download("stopwords")
+
     english_sw = set(stopwords.words('english') + list(string.punctuation))
     dataframe['Review Text'] = dataframe['Review Text'].apply(
         lambda x: " ".join([w.lower() for w in word_tokenize(str(x)) if w.lower() not in english_sw]))
