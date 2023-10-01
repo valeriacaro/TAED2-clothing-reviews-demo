@@ -14,6 +14,3 @@ def create_df() -> pd.DataFrame:
     filename = get_filename()
     dataframe = pd.read_csv(filename)
     return dataframe
-
-if __name__ == '__main__':
-    df = create_df()
