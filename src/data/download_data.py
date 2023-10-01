@@ -1,4 +1,4 @@
-import sys
+from get_filename import *
 import kaggle
 
 def download_df():
@@ -12,7 +12,7 @@ def download_df():
         None
     """
 
-    download_dir = sys.argv[1]
+    download_dir = get_filename()
 
     username = "nicapotato"
     dataset_name = "womens-ecommerce-clothing-reviews"
