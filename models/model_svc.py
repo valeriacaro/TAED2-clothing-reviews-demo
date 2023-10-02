@@ -13,6 +13,20 @@ from sklearn.metrics import f1_score
 
 
 # FUNCTIONS
+def read_data(path_to_data:str) -> pd.DataFrame:
+    """
+    Reads data from csv and creates a DataFrame from it.
+
+    Args:
+       path_to_data: Path where data we want can be found
+
+    Returns:
+        DataFrame: The preprocessed data in a pandas DataFrame.
+    """
+    dataframe = pd.read_csv(path_to_data)
+    return dataframe
+
+
 def tracking():
     """
         Set up MLflow tracking URI and enable automatic logging.
@@ -132,8 +146,9 @@ def loading(stem=True) -> SVC:
 if __name__ == '__main__':
     tracking()
 
-    # Load and preprocess the data
-    df = read_data()
+    # Read the preprocessed data
+    path_data = "./data/raw/raw_data.csv"
+    df = read_data(path_data)
 
     # Set this flag based on whether stemming is applied or not
     use_stemming = True
