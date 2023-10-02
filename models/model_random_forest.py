@@ -9,21 +9,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
-
-
-# FUNCTIONS
-def read_data(path_to_data: str) -> pd.DataFrame:
-    """
-    Reads data from csv and creates a DataFrame from it.
-
-    Args:
-       path_to_data: Path where data we want can be found
-
-    Returns:
-        DataFrame: The preprocessed data in a pandas DataFrame.
-    """
-    dataframe = pd.read_csv(path_to_data)
-    return dataframe
+from src.data.get_and_save_data import *
 
 
 def tracking():
@@ -68,6 +54,7 @@ def vectorization(x_train, x_test):
     Returns:
         tuple: A tuple containing TF-IDF vectors for training and testing data.
     """
+
     tf_idf_vectorizer = TfidfVectorizer()
     x_train_tf_idf = tf_idf_vectorizer.fit_transform(x_train)
     x_test_tf_idf = tf_idf_vectorizer.transform(x_test)
@@ -148,10 +135,11 @@ def prediction(model, x_test) -> list:
 
 
 if __name__ == '__main__':
+
     tracking()
     # Load and preprocess the data
     path_data = "./data/processed/processed_data.csv"
-    df = read_data(path_data)
+    df = get_data_from_local(path_data)
 
     # Set this flag based on whether stemming is applied or not
     use_stemming = True
