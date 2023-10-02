@@ -150,7 +150,7 @@ def prediction(model, x_test) -> list:
 if __name__ == '__main__':
     tracking()
     # Load and preprocess the data
-    path_data = "./data/raw/raw_data.csv"
+    path_data = "./data/processed/processed_data.csv"
     df = read_data(path_data)
 
     # Set this flag based on whether stemming is applied or not
