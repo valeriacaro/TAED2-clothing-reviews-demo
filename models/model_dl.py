@@ -1,23 +1,13 @@
 # IMPORTS
 import argparse
 import mlflow.pytorch
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import precision_score
-from sklearn.metrics import recall_score
-from sklearn.metrics import f1_score
 import random
 import pandas as pd
 import torch  # Deep learning framework
 import time
 from sklearn.model_selection import train_test_split
-import nltk
-from nltk.corpus import stopwords
-import sys
-from nltk.stem import SnowballStemmer
-from nltk.tokenize import word_tokenize
-import string
 import numpy as np
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+
 
 
 # HYPERPARAMETERS
@@ -38,9 +28,18 @@ def set_seed():
     torch.manual_seed(seed)
 
 
-def read_data() -> pd.DataFrame:
-    """ Load the preprocessed data"""
-    pass
+def read_data(path_to_data:str) -> pd.DataFrame:
+    """
+    Reads data from csv and creates a DataFrame from it.
+
+    Args:
+       path_to_data: Path where data we want can be found
+
+    Returns:
+        DataFrame: The preprocessed data in a pandas DataFrame.
+    """
+    dataframe = pd.read_csv(path_to_data)
+    return dataframe
 
 
 class Dictionary(object):
@@ -49,12 +48,27 @@ class Dictionary(object):
         self.idx2token = []
 
     def add_token(self, token):
+        """
+            Add a token to the dictionary and return its index.
+
+            Args:
+                token (str): The token to be added to the dictionary.
+
+            Returns:
+                int: The index of the added token.
+        """
         if token not in self.token2idx:
             self.idx2token.append(token)
             self.token2idx[token] = len(self.idx2token) - 1
         return self.token2idx[token]
 
     def __len__(self):
+        """
+            Get the length of the dictionary.
+
+            Returns:
+                int: The number of tokens in the dictionary.
+        """
         return len(self.idx2token)
 
 
@@ -76,7 +90,15 @@ def stemming(df, stem=True) -> tuple:
 
 
 def create_word_vocab(x):
-    """Create a vocabulary for word tokens."""
+    """
+        Create a vocabulary for word tokens.
+
+        Args:
+            x (list): List of input text data containing word tokens.
+
+        Returns:
+            tuple: A tuple containing the word vocabulary (vocab), pad token index (pad_index), and unknown token index (unk_index).
+    """
     vocab = Dictionary()
     pad_token = '<pad>'
     unk_token = '<unk>'
@@ -89,7 +111,15 @@ def create_word_vocab(x):
     return vocab, pad_index, unk_index
 
 def create_label_vocab(y):
-    """Create a vocabulary for labels."""
+    """
+        Create a vocabulary for labels.
+
+        Args:
+            y (list): List of labels.
+
+        Returns:
+            Dictionary: The label vocabulary.
+    """
     label_vocab = Dictionary()
     # Create a set of labels from the training labels (0 or 1)
     labels = set(y)
@@ -99,21 +129,50 @@ def create_label_vocab(y):
 
 
 def convert_data_to_indices(x, y, vocab, label_vocab):
-    """Convert data to token indices."""
+    """
+        Convert data to token indices.
+
+        Args:
+            x (list): List of input text data containing word tokens.
+            y (list): List of labels.
+            vocab (Dictionary): Word vocabulary.
+            label_vocab (Dictionary): Label vocabulary.
+
+        Returns:
+            tuple: A tuple containing the converted input data (x_idx) and labels (y_idx) as token indices.
+    """
     x_idx = [np.array([vocab.token2idx[word] for word in line.split()]) for line in x]
     y_idx = np.array([label_vocab.token2idx[label] for label in y])
     return x_idx, y_idx
 
 
 def split_data(x, y):
-    """Split data into training, validation, and test sets."""
-    x_train, x_temp, y_train, y_temp = train_test_split(x, y, test_size=0.3, random_state=seed)
-    x_val, x_test, y_val, y_test = train_test_split(x_temp, y_temp, test_size=0.5, random_state=seed)
-    return (x_train, y_train), (x_val, y_val), (x_test, y_test)
+    """
+        Split data into training and validation sets.
+
+        Args:
+            x (list): List of input data.
+            y (list): List of labels.
+
+        Returns:
+            tuple: A tuple containing training and validation data splits.
+    """
+    x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.15, random_state=seed)
+    return (x_train, y_train), (x_val, y_val)
 
 
 def batch_generator(data, batch_size, token_size):
-    """Yield elements from data in chunks with a maximum of batch_size sequences and token_size tokens."""
+    """
+        Yield elements from data in chunks with a maximum of batch_size sequences and token_size tokens.
+
+        Args:
+            data (list): List of input sequences.
+            batch_size (int): Maximum batch size.
+            token_size (int): Maximum token size for each batch.
+
+        Returns:
+            generator: A generator that yields batches of data.
+    """
     minibatch, sequences_so_far, tokens_so_far = [], 0, 0
     for ex in data:
         seq_len = len(ex[0])
@@ -134,9 +193,17 @@ def batch_generator(data, batch_size, token_size):
 
 
 def pool_generator(data, batch_size, token_size, shuffle=False):
-    """Sort within buckets, then batch, then shuffle batches.
-    Partitions data into chunks of size 100*token_size, sorts examples within
-    each chunk, then batch these examples and shuffle the batches.
+    """
+        Sort within buckets, then batch, then shuffle batches.
+
+        Args:
+            data (list): List of input sequences.
+            batch_size (int): Maximum batch size.
+            token_size (int): Maximum token size for each batch.
+            shuffle (bool): Whether to shuffle the batches.
+
+        Returns:
+            generator: A generator that yields batches of data.
     """
     for p in batch_generator(data, batch_size * 100, token_size * 100):
         p_batch = batch_generator(sorted(p, key=lambda t: len(t[0]), reverse=True), batch_size, token_size)
@@ -153,19 +220,47 @@ class CharRNNClassifier(torch.nn.Module):
 
     def __init__(self, input_size, embedding_size, hidden_size, output_size, model="lstm", num_layers=4,
                  bidirectional=False, pad_idx=0):
+        """
+               Initialize the Character RNN Classifier model.
+
+               Args:
+                   input_size (int): The size of the input vocabulary.
+                   embedding_size (int): The size of word embeddings.
+                   hidden_size (int): The size of the hidden layers.
+                   output_size (int): The size of the output (number of classes).
+                   model (str): The RNN model type ("lstm" or "gru").
+                   num_layers (int): The number of RNN layers.
+                   bidirectional (bool): Whether to use bidirectional RNN.
+                   pad_idx (int): The padding index for embeddings.
+
+               Returns:
+                   None
+        """
         super().__init__()
         self.model = model.lower()
         self.hidden_size = hidden_size
+        self.bidirectional = bidirectional
+        self.num_directions = 2 if bidirectional else 1
         self.embed = torch.nn.Embedding(input_size, embedding_size, padding_idx=pad_idx)
         if self.model == "gru":
             self.rnn = torch.nn.GRU(embedding_size, hidden_size, num_layers, bidirectional=bidirectional)
         elif self.model == "lstm":
             self.rnn = torch.nn.LSTM(embedding_size, 2*hidden_size, num_layers, bidirectional=bidirectional)
-        self.h2o = torch.nn.Linear(2*hidden_size, output_size)
-        self.dropout = torch.nn.Dropout(0.1, inplace=True)
+        self.h2o = torch.nn.Linear(self.num_directions * hidden_size, output_size)
+        self.dropout = torch.nn.Dropout(0.2, inplace=True)
 
 
     def forward(self, input, input_lengths):
+        """
+                Forward pass of the model.
+
+                Args:
+                    input (Tensor): Input sequences.
+                    input_lengths (Tensor): Lengths of input sequences.
+
+                Returns:
+                    Tensor: Model output.
+        """
         # T x B
         encoded = self.embed(input)
         # T x B x E
@@ -179,12 +274,27 @@ class CharRNNClassifier(torch.nn.Module):
         # Dropout
         output = self.dropout(output)
         # B x H
-        output = self.h2o(output)  # no hay prob actualizada
+        output = self.h2o(output.view(-1, self.num_directions * self.hidden_size))
         # B x O
         return output
 
 
 def train(model, optimizer, data, batch_size, token_size, max_norm=1, log=False):
+    """
+        Train the model on the provided data.
+
+        Args:
+            model (torch.nn.Module): The model to be trained.
+            optimizer (torch.optim.Optimizer): The optimizer for training.
+            data (list): List of training data.
+            batch_size (int): Maximum batch size.
+            token_size (int): Maximum token size for each batch.
+            max_norm (float): Maximum gradient norm for gradient clipping.
+            log (bool): Whether to log training statistics.
+
+        Returns:
+            tuple: A tuple containing the training accuracy and loss.
+    """
     model.train()
     total_loss = 0
     ncorrect = 0
@@ -221,6 +331,16 @@ def train(model, optimizer, data, batch_size, token_size, max_norm=1, log=False)
 
 
 def model_training(train_data, val_data):
+    """
+        Train the model on the training data.
+
+        Args:
+            train_data (list): List of training data.
+            val_data (list): List of validation data.
+
+        Returns:
+            torch.nn.Module: The trained model.
+    """
     train_accuracy = []
     valid_accuracy = []
     model, optimizer = get_model()
@@ -242,6 +362,18 @@ def model_training(train_data, val_data):
 
 
 def validate(model, data, batch_size, token_size):
+    """
+        Validate the model on the provided data.
+
+        Args:
+            model (torch.nn.Module): The model to be validated.
+            data (list): List of validation data.
+            batch_size (int): Maximum batch size.
+            token_size (int): Maximum token size for each batch.
+
+        Returns:
+            tuple: A tuple containing predictions and validation accuracy.
+    """
     model.eval()
     # calculate accuracy on validation set
     ncorrect = 0
@@ -258,7 +390,7 @@ def validate(model, data, batch_size, token_size):
             answer = model(X, X_lengths)
             ncorrect += (torch.max(answer, 1)[1] == y).sum().item()
             nsentences += y.numel()
-            # Agregar las predicciones a la lista
+            # Add predictions to the list
             predictions.extend(torch.max(answer, 1)[1].tolist())
 
         dev_acc = 100 * ncorrect / nsentences
@@ -266,28 +398,16 @@ def validate(model, data, batch_size, token_size):
 
 
 def get_model():
+    """
+        Get the model and optimizer for training.
+
+        Returns:
+            tuple: A tuple containing the model and optimizer.
+    """
     model = CharRNNClassifier(ntokens, embedding_size, hidden_size, nlabels, bidirectional=bidirectional,
                               pad_idx=pad_index)
     optimizer = torch.optim.Adam(model.parameters())
     return model, optimizer
-
-def prediction(model, test_data, y_test):
-    y_pred = validate(model, test_data, batch_size, token_size)[0]
-    accuracy = accuracy_score(y_test, y_pred)
-    return y_pred, accuracy
-
-def classification_task(model, x_train_scaled, y_train, x_test_scaled, y_test, predic, model_name):
-    perf_df = pd.DataFrame(
-        {'Train_Score': model.score(x_train_scaled, y_train), "Test_Score": model.score(x_test_scaled, y_test),
-         "Precision_Score": precision_score(y_test, predic), "Recall_Score": recall_score(y_test, predic),
-         "F1_Score": f1_score(y_test, predic), "accuracy": accuracy_score(y_test, predic)}, index=[model_name])
-    return perf_df
-
-def eval_metrics(actual, pred):
-    rmse = np.sqrt(mean_squared_error(actual, pred))
-    mae = mean_absolute_error(actual, pred)
-    r2 = r2_score(actual, pred)
-    return rmse, mae, r2
 
 
 # MAIN
@@ -299,67 +419,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Initialize MLflow
-    #mlflow.set_tracking_uri("https://github.com/MLOps-essi-upc/clothing-reviews/tree/develop/models")
+    mlflow.set_tracking_uri("https://github.com/MLOps-essi-upc/clothing-reviews/tree/develop/models")
     mlflow.set_experiment("experiment_dl")
 
-    # Load and preprocess the data
-    #df = read_data()
-    df = pd.read_csv("/Users/esther/Desktop/GCED/Q7/TAED2/LAB/Womens Clothing E-Commerce Reviews.csv")
-    df.drop(["Unnamed: 0"], axis=1, inplace = True)
-    df['Title'].isnull().count()
-    df.drop(['Title'], axis=1, inplace = True)
-    df.drop(['Positive Feedback Count'], axis = 1, inplace = True)
-    df = df.drop_duplicates()
-    df['Division Name'].value_counts()
-    df['Department Name'].value_counts()
-    df['Class Name'].value_counts()
-    df.loc[df['Rating'] <= 4, 'Recommended IND'] = 0
-    df['Recommended IND'].value_counts()
-    df.rename(columns={'Recommended IND': 'Top Product'}, inplace=True)
-    df.drop(['Rating'], axis = 1, inplace=True)
-    df.drop(['Division Name'], axis = 1, inplace=True)
-    df.drop(['Department Name'], axis = 1, inplace=True)
-    df.drop(['Class Name'], axis = 1, inplace=True)
-    df.drop(['Age'], axis = 1, inplace=True)
-    df.drop(['Clothing ID'], axis = 1, inplace=True)
-
-    nltk.download("punkt")
-    nltk.download("stopwords")
-
-    # List of stopwords
-    english_sw = set(stopwords.words('english') + list(string.punctuation))
-
-    df.astype(str)
-
-    # Erasing
-    for index in df.index:
-        text=word_tokenize(str(df.at[index,'Review Text']))
-        text = [w.lower() for w in text if w.lower() not in english_sw]
-        df.at[index,'Review Text']=text
-
-    for index in df.index:
-        text = [w for w in df.at[index,'Review Text'] if w not in "'s"]
-        df.at[index,'Review Text']=text
-
-
-    stem = SnowballStemmer('english')
-
-    stemmed_text=[]
-    for index in df.index:
-        stemmed_text.append([stem.stem(w) for w in df.at[index,'Review Text']])
-
-    df['Stemmed Review Text']=stemmed_text
-
-    df['Stemmed Review Text'] = df['Stemmed Review Text'].apply(
-    lambda x: " ".join([str(i) for i in x])
-    )
-
-    df['Review Text'] = df['Review Text'].apply(
-    lambda x: " ".join([str(i) for i in x])
-    )
-
-    df.head()
-
+    # Read the preprocessed data
+    path_data = "./data/raw/raw_data.csv"
+    df = read_data(path_data)
     # Set this flag based on whether stemming is applied or not
     use_stemming = True
     x, y = stemming(df, use_stemming)
@@ -370,12 +435,11 @@ if __name__ == '__main__':
     # Convert the data to indices
     x_idx, y_idx = convert_data_to_indices(x, y, word_vocab, label_vocab)
 
-    # Split the data into training (70%), validation (15%), and test (15%) sets
-    (x_train, y_train), (x_val, y_val), (x_test, y_test) = split_data(x_idx, y_idx)
+    # Split the data into training (85%) and validation (15%) sets
+    (x_train, y_train), (x_val, y_val) = split_data(x_idx, y_idx)
 
     train_data = [(x, y) for x, y in zip(x_train, y_train)]
     val_data = [(x, y) for x, y in zip(x_val, y_val)]
-    test_data = [(x, y) for x, y in zip(x_test, y_test)]
 
     criterion = torch.nn.CrossEntropyLoss(reduction='sum')
 
@@ -392,23 +456,6 @@ if __name__ == '__main__':
         mlflow.log_param("bidirectional", bidirectional)
 
         model = model_training(train_data, val_data)
-
-        y_pred, acc = prediction(model, test_data, y_test)
-
-        # Log test accuracy
-        mlflow.log_metric("test_accuracy", acc)
-
-        (rmse, mae, r2) = eval_metrics(y_test, y_pred)
-
-        print("SVC model (hidden_size=%f):" % (hidden_size))
-        print("SVC model (embedding_size=%f):" % (embedding_size))
-        print("  RMSE: %s" % rmse)
-        print("  MAE: %s" % mae)
-        print("  R2: %s" % r2)
-
-        mlflow.log_metric("rmse", rmse)
-        mlflow.log_metric("r2", r2)
-        mlflow.log_metric("mae", mae)
 
         # Save the trained model with mlflow
         mlflow.pytorch.save_model(model, "models")
