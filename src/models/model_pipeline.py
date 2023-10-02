@@ -34,6 +34,8 @@ if __name__ == '__main__':
 
     if TRAIN_ALL_MODEL:
         model = model_training(train_data, val_data, ntokens, nlabels, pad_index)
+    else:
+        model = torch.jit.load('./models/model.pth')
 
     y_pred, acc = prediction(model, test_data, y_test)
 
