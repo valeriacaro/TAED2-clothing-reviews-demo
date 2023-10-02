@@ -409,6 +409,59 @@ def get_model():
     optimizer = torch.optim.Adam(model.parameters())
     return model, optimizer
 
+def prediction(model, test_data, y_test) -> tuple:
+    """
+    Make predictions using a trained model and calculate accuracy.
+
+    Args:
+        model (torch.nn.Module): The trained model.
+        test_data (list): List of test data.
+        y_test (numpy.ndarray): True labels for the test data.
+
+    Returns:
+        tuple: A tuple containing predicted labels and accuracy.
+    """
+    y_pred = validate(model, test_data, batch_size, token_size)[0]
+    accuracy = accuracy_score(y_test, y_pred)
+    return y_pred, accuracy
+
+def classification_task(model, x_train_scaled, y_train, x_test_scaled, y_test, predic, model_name) -> pd.DataFrame:
+    """
+    Perform a classification task and return performance metrics as a DataFrame.
+
+    Args:
+        model (scikit-learn classifier): The trained classification model.
+        x_train_scaled (numpy.ndarray): Scaled training features.
+        y_train (numpy.ndarray): True labels for the training data.
+        x_test_scaled (numpy.ndarray): Scaled test features.
+        y_test (numpy.ndarray): True labels for the test data.
+        predic (numpy.ndarray): Predicted labels for the test data.
+        model_name (str): Name of the model for indexing in the DataFrame.
+
+    Returns:
+        DataFrame: A DataFrame containing performance metrics for the classification task.
+    """
+    perf_df = pd.DataFrame(
+        {'Train_Score': model.score(x_train_scaled, y_train), "Test_Score": model.score(x_test_scaled, y_test),
+         "Precision_Score": precision_score(y_test, predic), "Recall_Score": recall_score(y_test, predic),
+         "F1_Score": f1_score(y_test, predic), "accuracy": accuracy_score(y_test, predic)}, index=[model_name])
+    return perf_df
+
+def eval_metrics(actual, pred):
+    """
+    Calculate evaluation metrics for regression tasks.
+
+    Args:
+        actual (numpy.ndarray): True target values.
+        pred (numpy.ndarray): Predicted target values.
+
+    Returns:
+        tuple: A tuple containing RMSE (Root Mean Squared Error), MAE (Mean Absolute Error), and R-squared (R2) scores.
+    """
+    rmse = np.sqrt(mean_squared_error(actual, pred))
+    mae = mean_absolute_error(actual, pred)
+    r2 = r2_score(actual, pred)
+    return rmse, mae, r2
 
 # MAIN
 if __name__ == '__main__':
@@ -435,11 +488,12 @@ if __name__ == '__main__':
     # Convert the data to indices
     x_idx, y_idx = convert_data_to_indices(x, y, word_vocab, label_vocab)
 
-    # Split the data into training (85%) and validation (15%) sets
-    (x_train, y_train), (x_val, y_val) = split_data(x_idx, y_idx)
+    # Split the data into training (70%), validation (15%), and test (15%) sets
+    (x_train, y_train), (x_val, y_val), (x_test, y_test) = split_data(x_idx, y_idx)
 
     train_data = [(x, y) for x, y in zip(x_train, y_train)]
     val_data = [(x, y) for x, y in zip(x_val, y_val)]
+    test_data = [(x, y) for x, y in zip(x_test, y_test)]
 
     criterion = torch.nn.CrossEntropyLoss(reduction='sum')
 
@@ -457,8 +511,22 @@ if __name__ == '__main__':
 
         model = model_training(train_data, val_data)
 
+        y_pred, acc = prediction(model, test_data, y_test)
+
+        # Log test accuracy
+        mlflow.log_metric("test_accuracy", acc)
+
+        (rmse, mae, r2) = eval_metrics(y_test, y_pred)
+
+        print("SVC model (hidden_size=%f):" % (hidden_size))
+        print("SVC model (embedding_size=%f):" % (embedding_size))
+        print("  RMSE: %s" % rmse)
+        print("  MAE: %s" % mae)
+        print("  R2: %s" % r2)
+
+        mlflow.log_metric("rmse", rmse)
+        mlflow.log_metric("r2", r2)
+        mlflow.log_metric("mae", mae)
+
         # Save the trained model with mlflow
         mlflow.pytorch.save_model(model, "models")
-
-    # Close the MLflow run
-    mlflow.end_run()
