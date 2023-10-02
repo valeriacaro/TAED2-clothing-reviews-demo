@@ -26,8 +26,9 @@ def tokenization(dataframe) -> pd.DataFrame:
         lambda x: " ".join([w.lower() for w in word_tokenize(
             str(x)) if w.lower() not in english_sw])
     )
+
     dataframe['Review Text'] = dataframe['Review Text'].apply(
-        lambda text: " ".join([w for w in text if w not in "'s"])
+        lambda text: " ".join([w for w in text.split() if w != "'s"])
     )
 
     return dataframe
@@ -46,7 +47,7 @@ def get_stemmed_text(dataframe) -> pd.DataFrame:
     """
 
     stem = SnowballStemmer('english')
-    dataframe['Stemmed Review Text'] = dataframe['Review Text'].apply(lambda text: " ".join([stem.stem(w) for w in text]))
+    dataframe['Stemmed Review Text'] = dataframe['Review Text'].apply(lambda text: " ".join([stem.stem(w) for w in text.split()]))
     return dataframe
 
 
@@ -73,12 +74,12 @@ def process_df(dataframe: pd.DataFrame) -> pd.DataFrame:
 
 if __name__ == '__main__':
 
-    path_to_interim_data = "./data/interim/interim_data.csv"
+    path_to_interim_data = "../../data/interim/interim_data.csv"
     df = get_data_from_local(path_to_interim_data)
 
     df = process_df(df)
 
-    path_to_processed_data = "./data/processed/processed_data.csv"
+    path_to_processed_data = "../../data/processed/processed_data.csv"
     save_data_to_local(
         path_to_processed_data,
         df
