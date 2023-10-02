@@ -9,9 +9,9 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
+from src.data.get_and_save_data import *
 
 
-# FUNCTIONS
 def tracking():
     """
      Set up MLflow tracking URI and enable automatic logging.
@@ -54,6 +54,7 @@ def vectorization(x_train, x_test):
     Returns:
         tuple: A tuple containing TF-IDF vectors for training and testing data.
     """
+
     tf_idf_vectorizer = TfidfVectorizer()
     x_train_tf_idf = tf_idf_vectorizer.fit_transform(x_train)
     x_test_tf_idf = tf_idf_vectorizer.transform(x_test)
@@ -99,7 +100,7 @@ def train_and_save_model(x, y, stem=True):
     random_forest = RandomForestClassifier()
     random_forest.fit(x, y)
     # Determine the model file name based on whether stemming is applied
-    filename = "models/model_rf_stem" if stem else "models/model_rf"
+    filename = "models/model_rf_stem.joblib" if stem else "models/model_rf.joblib"
     # Save the model
     joblib.dump(random_forest, filename)
 
@@ -113,7 +114,7 @@ def loading(stem=True):
          model: The loaded model.
     """
     # Determine the model file name based on whether stemming is applied
-    filename = "models/model_rf_stem" if stem else "models/model_rf"
+    filename = "models/model_rf_stem.joblib" if stem else "models/model_rf.joblib"
     # Load the model
     model = joblib.load(filename)
     return model
@@ -134,9 +135,11 @@ def prediction(model, x_test) -> list:
 
 
 if __name__ == '__main__':
+
     tracking()
-    # Read the data and preprocess it as needed
-    df = read_data()
+    # Load and preprocess the data
+    path_data = "./data/processed/processed_data.csv"
+    df = get_data_from_local(path_data)
 
     # Set this flag based on whether stemming is applied or not
     use_stemming = True

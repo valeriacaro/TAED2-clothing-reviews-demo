@@ -3,7 +3,9 @@ import json
 import os
 import pandas as pd
 
+
 def get_data_from_source() -> None:
+
     """
     Downloads kaggle dataset and saves it in a given path.
 
@@ -35,7 +37,9 @@ def get_data_from_source() -> None:
     # Rename the file
     os.rename(original_file_path, desired_file_name)
 
+
 def get_data_from_local(path_to_data: str) -> pd.DataFrame:
+
     """
         Reads data from csv and creates a DataFrame from it.
 
@@ -50,10 +54,12 @@ def get_data_from_local(path_to_data: str) -> pd.DataFrame:
 
     return dataframe
 
+
 def save_data_to_local(
         path_to_save: str,
         dataframe: pd.DataFrame
 ) -> None:
+
     """
         Saves a dataframe on a certain path
 
@@ -66,6 +72,7 @@ def save_data_to_local(
     """
 
     dataframe.to_csv(path_to_save, index=False)
+
 
 if __name__ == '__main__':
 

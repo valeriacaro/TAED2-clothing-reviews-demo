@@ -10,9 +10,12 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
+from src.data.get_and_save_data import *
 
 
 # FUNCTIONS
+
+
 def tracking():
     """
         Set up MLflow tracking URI and enable automatic logging.
@@ -132,8 +135,9 @@ def loading(stem=True) -> SVC:
 if __name__ == '__main__':
     tracking()
 
-    # Load and preprocess the data
-    df = read_data()
+    # Read the preprocessed data
+    path_data = "./data/processed/processed_data.csv"
+    df = get_data_from_local(path_data)
 
     # Set this flag based on whether stemming is applied or not
     use_stemming = True
