@@ -12,6 +12,20 @@ from sklearn.metrics import f1_score
 
 
 # FUNCTIONS
+def read_data(path_to_data: str) -> pd.DataFrame:
+    """
+    Reads data from csv and creates a DataFrame from it.
+
+    Args:
+       path_to_data: Path where data we want can be found
+
+    Returns:
+        DataFrame: The preprocessed data in a pandas DataFrame.
+    """
+    dataframe = pd.read_csv(path_to_data)
+    return dataframe
+
+
 def tracking():
     """
      Set up MLflow tracking URI and enable automatic logging.
@@ -99,7 +113,7 @@ def train_and_save_model(x, y, stem=True):
     random_forest = RandomForestClassifier()
     random_forest.fit(x, y)
     # Determine the model file name based on whether stemming is applied
-    filename = "models/model_rf_stem" if stem else "models/model_rf"
+    filename = "models/model_rf_stem.joblib" if stem else "models/model_rf.joblib"
     # Save the model
     joblib.dump(random_forest, filename)
 
@@ -113,7 +127,7 @@ def loading(stem=True):
          model: The loaded model.
     """
     # Determine the model file name based on whether stemming is applied
-    filename = "models/model_rf_stem" if stem else "models/model_rf"
+    filename = "models/model_rf_stem.joblib" if stem else "models/model_rf.joblib"
     # Load the model
     model = joblib.load(filename)
     return model
@@ -135,8 +149,9 @@ def prediction(model, x_test) -> list:
 
 if __name__ == '__main__':
     tracking()
-    # Read the data and preprocess it as needed
-    df = read_data()
+    # Load and preprocess the data
+    path_data = "./data/raw/raw_data.csv"
+    df = read_data(path_data)
 
     # Set this flag based on whether stemming is applied or not
     use_stemming = True
