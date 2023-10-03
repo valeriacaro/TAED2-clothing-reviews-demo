@@ -12,7 +12,16 @@ The model used is a Long Short-Term Memory (LSTM) model, a type of recurrent neu
 
 ### Model Description
 
-The LSTM (Long Short-Term Memory) model is a sequential neural network architecture with dropout regularization. It is trained on X% of the dataset, and is designed for opinion analysis and product recommendation prediction. It leverages the structure of text data to capture dependencies and patterns in reviews, allowing it to make binary recommendations based on the sentiment and content of incoming reviews.
+The LSTM (Long Short-Term Memory) model is a sequential neural network architecture uniquely
+designed for opinion analysis and product recommendation prediction. It capitalizes on the inherent
+structure of textual data, enabling it to capture intricate dependencies and patterns within reviews.
+Consequently, the model can make binary recommendations by considering both the sentiment and
+content of input reviews.
+
+To enhance its performance, the LSTM model operates bidirectionally, meaning it processes sequences
+both forwards and backwards. This enables it to capture context from both directions and better
+understand the nuances in reviews. Moreover a Dropout, with a rate of 0.2, is implemented within
+the model to prevent overfitting and improve generalization.
 
 
 - **Developed by:** Valèria Caro Via, Esther Fanyanàs i Ropero, Claudia Len Manero
@@ -76,11 +85,18 @@ Use the code below to get started with the model.
 
 ### Training Data
 
+The processed data underwent a split, allocating 85% of the data for the training dataset. Within this
+training dataset, a further division was made, reserving 70% for the primary training subset and 15%
+for data validation.
+
 <!-- This should link to a Data Card, perhaps with a short stub of information on what the training data is all about as well as documentation related to data pre-processing or additional filtering. -->
 
 {{ training_data | default("[More Information Needed]", true)}}
 
 ### Training Procedure 
+
+During the training process, cross-validation for 10 epochs was applied to iteratively
+enhance the model’s performance and robustness. 
 
 <!-- This relates heavily to the Technical Specifications. Content here should link to that section when it is relevant to the training procedure. -->
 
@@ -90,6 +106,18 @@ Use the code below to get started with the model.
 
 
 #### Training Hyperparameters
+
+The hyperparameteres have been evaluated through experiments in MlFlow and the best results
+obtained have been with the follows:
+
+- **Batch Size:** 512
+
+- **Embedding Size:** 128
+
+- **Hidden Size:** 256
+
+- **Token Size:** 20000
+
 
 - **Training regime:** {{ training_regime | default("[More Information Needed]", true)}} <!--fp32, fp16 mixed precision, bf16 mixed precision, bf16 non-mixed precision, fp16 non-mixed precision, fp8 mixed precision -->
 
@@ -101,11 +129,13 @@ Use the code below to get started with the model.
 
 ## Evaluation
 
-<!-- This section describes the evaluation protocols and provides the results. -->
+This section describes the evaluation protocols and provides the results.
 
 ### Testing Data, Factors & Metrics
 
 #### Testing Data
+
+or our test dataset, we employed a 15% split of the preprocessed data.
 
 <!-- This should link to a Data Card if possible. -->
 
@@ -119,11 +149,19 @@ Use the code below to get started with the model.
 
 #### Metrics
 
-The metric used to evaluate the model is *Accuracy*, as we want to be as sure as possible that all opinions are well represented: in the bad ones the product is not recommended and in the good ones it is.
-
-- Accuracy: 
+In assessing the model’s performance, we focused on the Accuracy metric. This choice aligns with our objective of ensuring
+comprehensive representation of opinions. We aim to accurately classify reviews, categorizing products
+as either recommended or not recommended, encompassing both positive and negative sentiments.
+Subsequently, we conducted an evaluation of the model’s performance, resulting in the following
+performance metrics:
 
 ### Results
+
+Subsequently, we conducted an evaluation of the model’s performance, resulting in the following
+performance metrics:
+
+- **Training Accuracy:** 90.78%
+- **Validation Accuracy:** 77.5%
 
 {{ results | default("[More Information Needed]", true)}}
 
