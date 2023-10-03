@@ -17,18 +17,16 @@ def get_data_from_source() -> None:
     """
 
     # path where to save data csv
-    download_dir = "../../data/raw"
+    download_dir = "./data/raw"
     # path where to find data to get kaggle dataset
-    connection_source = "../../data/external/external_connection.json"
+    connection_source = "./data/external/external_connection.json"
 
-    #with open(connection_source, 'r') as file:
-        #source_data = json.load(file)
+    with open(connection_source, 'r') as file:
+        source_data = json.load(file)
 
     # save json data
-    username = "nicapotato"
-        #source_data)["username"]
-    dataset_name = "womens-ecommerce-clothing-reviews"
-    #source_data["dataset_name"]
+    username = source_data["username"]
+    dataset_name = source_data["dataset_name"]
 
     # download the dataset in CSV format
     kaggle.api.dataset_download_files(f"{username}/{dataset_name}", path=download_dir, unzip=True)
