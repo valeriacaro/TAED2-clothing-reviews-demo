@@ -74,12 +74,12 @@ def process_df(dataframe: pd.DataFrame) -> pd.DataFrame:
 
 if __name__ == '__main__':
 
-    path_to_interim_data = "../../data/interim/interim_data.csv"
+    path_to_interim_data = "./data/interim/interim_data.csv"
     df = get_data_from_local(path_to_interim_data)
 
     df = process_df(df)
 
-    path_to_processed_data = "../../data/processed/processed_data.csv"
+    path_to_processed_data = "./data/processed/processed_data.csv"
     save_data_to_local(
         path_to_processed_data,
         df
