@@ -16,7 +16,7 @@ def dropping(dataframe: pd.DataFrame) -> pd.DataFrame:
     """
 
     dataframe.drop(
-        ["Title", "Positive Feedback Count", "Division Name",
+        ["Unnamed: 0", "Title", "Positive Feedback Count", "Division Name",
          "Department Name", "Class Name", "Age",
          "Clothing ID", "Rating"], axis=1, inplace=True
     )
@@ -70,6 +70,8 @@ if __name__ == '__main__':
     if GET_DATA_FROM_SOURCE:
         get_data_from_source()
 
+
+    # Navigate to the parent directory
     path_to_raw_data = "./data/raw/raw_data.csv"
     df = get_data_from_local(path_to_raw_data)
 
@@ -81,13 +83,3 @@ if __name__ == '__main__':
         df
     )
 
-    path_to_raw_data = "./data/raw/raw_data.csv"
-    df = get_data_from_local(path_to_raw_data)
-
-    df = clean_df(df)
-
-    path_to_interim_data = "./data/interim/interim_data.csv"
-    save_data_to_local(
-        path_to_interim_data,
-        df
-    )
