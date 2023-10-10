@@ -1,5 +1,6 @@
 import nltk
 import string
+import re
 from nltk.tokenize import word_tokenize
 from nltk.stem import SnowballStemmer
 from nltk.corpus import stopwords
@@ -21,10 +22,12 @@ def tokenization(dataframe) -> pd.DataFrame:
     nltk.download("punkt")
     nltk.download("stopwords")
 
-    english_sw = set(stopwords.words('english') + list(string.punctuation))
+    custom_stopwords = ['\'', '\'\'']
+
+    english_sw = stopwords.words('english') + list(string.punctuation) + custom_stopwords
     dataframe['Review Text'] = dataframe['Review Text'].apply(
         lambda x: " ".join([w.lower() for w in word_tokenize(
-            str(x)) if w.lower() not in english_sw])
+            re.sub(r'[^\w\s]', '', str(x))) if w.lower() not in english_sw])
     )
 
     dataframe['Review Text'] = dataframe['Review Text'].apply(
@@ -47,7 +50,9 @@ def get_stemmed_text(dataframe) -> pd.DataFrame:
     """
 
     stem = SnowballStemmer('english')
-    dataframe['Stemmed Review Text'] = dataframe['Review Text'].apply(lambda text: " ".join([stem.stem(w) for w in text.split()]))
+    dataframe['Stemmed Review Text'] = dataframe['Review Text'].apply(
+        lambda text: " ".join([stem.stem(w) for w in text.split()])
+    )
     return dataframe
 
 
