@@ -36,10 +36,10 @@ def stemming(df, stem=True) -> tuple:
     """
 
     if stem:
-        x = df["Stemmed Review Text"]
+        x = df["Stemmed Review Text"].values
     else:
-        x = df["Review Text"]
-    y = df["Top Product"]
+        x = df["Review Text"].values
+    y = df["Top Product"].values
     return x, y
 
 
@@ -61,9 +61,22 @@ def create_word_vocab(x):
     pad_index = vocab.add_token(pad_token)
     unk_index = vocab.add_token(unk_token)
 
-    words = set(' '.join(x).split())
-    for word in sorted(words):
+    # Join the list of strings into a single string
+    combined_text = ' '.join(str(item) for item in x)
+
+    # Split the combined text into words
+    words = combined_text.split()
+
+    # Create a sorted tuple of unique words
+    unique_sorted_words = sorted(set(words))
+
+    # Add words to the custom vocabulary
+    for word in unique_sorted_words:
         vocab.add_token(word)
+
+    # words = set(' '.join(x).split())
+    # for word in sorted(words):
+    #     vocab.add_token(word)
     return vocab, pad_index, unk_index
 
 
@@ -102,10 +115,15 @@ def convert_data_to_indices(x, y, vocab, label_vocab):
             tuple: A tuple containing the converted input data (x_idx) and labels (y_idx) as token indices.
     """
 
-    x_idx = [np.array([vocab.token2idx[word] for word in line.split()]) for line in x]
+    x_idx = []
+
+    for sentence in x:
+        tokens = sentence.split()
+        indexes = np.array([vocab.token2idx[word] for word in tokens])
+        x_idx.append(indexes)
+
     y_idx = np.array([label_vocab.token2idx[label] for label in y])
     return x_idx, y_idx
-
 
 def split_data(x, y):
 
