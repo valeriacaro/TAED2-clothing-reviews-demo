@@ -1,7 +1,27 @@
-prepare:
-  train_size: 0.8
-  test_size: 0.2
-  random_state: 2023
-train:
-  algorithm: "BERTmodelFineTunned"
-  random_state: 2023
+stages:
+  prepare:
+    cmd: python -m src.data.data_pipeline
+    deps:
+      - data/raw/
+      - src/data/data_pipeline.py
+    params:
+      - prepare
+    outs:
+      - data/processed/
+  train:
+    cmd: python -m src.models.train_model
+    deps:
+      - data/processed/
+      - src/models/train_model.py
+    params:
+      - train
+    outs:
+      - models/
+  test:
+    cmd: python -m src.models.test_model
+    deps:
+      - data/processed/
+      - models
+      - src/models/test_model.py
+    params:
+      - train
