@@ -5,14 +5,14 @@ from src.data.preprocess_data import *
 
 params_path = Path("../../dvc.yaml")
 
-path_to_raw_data = "./data/raw/raw_data.csv"
+get_data_from_source()
 
 data = get_data_from_local(path_to_raw_data)
 
 with open(params_path, "r") as params_file:
     try:
-        params = yaml.safe_load(params_file)
-        params = params["prepare"]
+        stages = yaml.safe_load(params_file)
+        stages = stages["prepare"]
     except yaml.YAMLError as exc:
         print(exc)
 
