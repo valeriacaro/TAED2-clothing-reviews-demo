@@ -3,7 +3,7 @@ import yaml
 from src.data.process_data import *
 from src.data.preprocess_data import *
 
-params_path = Path("params.yaml")
+params_path = Path("../../dvc.yaml")
 
 path_to_raw_data = "./data/raw/raw_data.csv"
 
