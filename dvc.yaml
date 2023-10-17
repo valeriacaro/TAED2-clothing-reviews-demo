@@ -1,16 +1,4 @@
 stages:
-  prepare:
-    cmd: python -m src.features.prepare
-    deps:
-    - data/raw/raw_data.csv
-    - src/features/prepare.py
-    params:
-    - prepare.random_state
-    - prepare.test_size
-    - prepare.train_size
-    outs:
-    - data/processed/test_data_processed.csv
-    - data/processed/train_data_processed.csv
   train:
     cmd: python -m src.models.train_model
     deps:
@@ -28,3 +16,15 @@ stages:
     - src/models/test_model.py
     params:
     - test
+  prepare:
+    cmd: python -m src.features.prepare
+    deps:
+    - data/raw/raw_data.csv
+    - src/features/prepare.py
+    params:
+    - prepare.random_state
+    - prepare.test_size
+    - prepare.train_size
+    outs:
+    - data/processed/test_data_processed.csv
+    - data/processed/train_data_processed.csv
