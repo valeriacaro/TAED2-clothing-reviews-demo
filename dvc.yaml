@@ -1,9 +1,9 @@
 stages:
   prepare:
-    cmd: python -m src.data.data_pipeline
+    cmd: python -m src.features.prepare
     deps:
       - data/raw/
-      - src/data/data_pipeline.py
+      - src/features/prepare.py
     params:
       - prepare
     outs:
@@ -24,4 +24,4 @@ stages:
       - models
       - src/models/test_model.py
     params:
-      - train
+      - test
