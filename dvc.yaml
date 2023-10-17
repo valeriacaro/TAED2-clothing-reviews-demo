@@ -2,11 +2,12 @@ stages:
   prepare:
     cmd: python -m src.features.prepare
     deps:
-      - data/raw/
+      - kaggle.json
       - src/features/prepare.py
     params:
       - prepare
     outs:
+      - data/raw/
       - data/processed/
   train:
     cmd: python -m src.models.train_model
