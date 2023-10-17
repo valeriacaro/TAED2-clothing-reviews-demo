@@ -3,10 +3,11 @@ import yaml
 from src.data.process_data import *
 from src.data.preprocess_data import *
 
-params_path = Path("../../dvc.yaml")
+params_path = Path("../../params.yaml")
 
 get_data_from_source()
 
+path_to_raw_data = "../../data/raw/raw_data.csv"
 data = get_data_from_local(path_to_raw_data)
 
 with open(params_path, "r") as params_file:
@@ -23,10 +24,10 @@ train_data = data.sample(frac=params["train_size"], random_state=params["random_
 test_data = data.drop(train_data.index)
 
 
-path_to_processed = "./data/processed"
+path_to_processed = "../../data/processed"
 
-train_data_path = path_to_processed / "train_data_processed.csv"
-test_data_path = path_to_processed / "test_data_processed.csv"
+train_data_path = path_to_processed + "/train_data_processed.csv"
+test_data_path = path_to_processed + "/test_data_processed.csv"
 
 
 save_data_to_local(train_data_path, train_data)

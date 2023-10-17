@@ -1,4 +1,4 @@
-from get_and_save_data import *
+from src.data.get_and_save_data import *
 
 GET_DATA_FROM_SOURCE = True
 

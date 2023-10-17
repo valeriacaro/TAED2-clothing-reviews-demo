@@ -17,9 +17,9 @@ def get_data_from_source() -> None:
     """
 
     # path where to save data csv
-    download_dir = "./data/raw"
+    download_dir = "../../data/raw"
     # path where to find data to get kaggle dataset
-    connection_source = "./data/external/external_connection.json"
+    connection_source = "../../data/external/external_connection.json"
 
     with open(connection_source, 'r') as file:
         source_data = json.load(file)
