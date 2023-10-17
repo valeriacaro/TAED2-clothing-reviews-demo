@@ -1,0 +1,4 @@
+[core]
+    autostage = true
+['remote "origin"']
+    url = https://dagshub.com/claudialen/TAED2-clothing-reviews.dvc
