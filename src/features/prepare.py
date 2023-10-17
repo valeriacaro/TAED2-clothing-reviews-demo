@@ -3,13 +3,13 @@ import yaml
 from src.data.process_data import *
 from src.data.preprocess_data import *
 
-paramspath = Path("params.yaml")
+params_path = Path("params.yaml")
 
 path_to_raw_data = "./data/raw/raw_data.csv"
 
 data = get_data_from_local(path_to_raw_data)
 
-with open(paramspath, "r") as params_file:
+with open(params_path, "r") as params_file:
     try:
         params = yaml.safe_load(params_file)
         params = params["prepare"]
