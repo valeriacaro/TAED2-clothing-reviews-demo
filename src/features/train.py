@@ -1,16 +1,19 @@
 from pathlib import Path
 import yaml
-from src.data.process_data import *
-from src.data.preprocess_data import *
+from src.models.train_model import *
+from src.data.get_and_save_data import *
 
-params_path = Path("../../dvc.yaml")
+params_path = Path("../../params.yaml")
 
-data = get_data_from_local(path_to_raw_data)
+path_to_train_data = "../../data/processed/train_data_processed.csv"
+path_to_test_data = "../../data/processed/test_data_processed.csv"
+
+train_data = get_data_from_local(path_to_train_data)
 
 with open(params_path, "r") as params_file:
     try:
-        stages = yaml.safe_load(params_file)
-        stages = stages["train"]
+        params = yaml.safe_load(params_file)
+        params = params["train"]
     except yaml.YAMLError as exc:
         print(exc)
 

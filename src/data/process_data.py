@@ -4,7 +4,7 @@ import re
 from nltk.tokenize import word_tokenize
 from nltk.stem import SnowballStemmer
 from nltk.corpus import stopwords
-from get_and_save_data import *
+from src.data.get_and_save_data import *
 
 
 def tokenization(dataframe) -> pd.DataFrame:
