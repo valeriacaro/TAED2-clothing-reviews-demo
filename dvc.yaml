@@ -2,27 +2,29 @@ stages:
   prepare:
     cmd: python -m src.features.prepare
     deps:
-      - kaggle.json
-      - src/features/prepare.py
+    - data/raw/raw_data.csv
+    - src/features/prepare.py
     params:
-      - prepare
+    - prepare.random_state
+    - prepare.test_size
+    - prepare.train_size
     outs:
-      - data/raw/
-      - data/processed/
+    - data/processed/test_data_processed.csv
+    - data/processed/train_data_processed.csv
   train:
     cmd: python -m src.models.train_model
     deps:
-      - data/processed/
-      - src/models/train_model.py
+    - data/processed/
+    - src/models/train_model.py
     params:
-      - train
+    - train
     outs:
-      - models/
+    - models/
   test:
     cmd: python -m src.models.test_model
     deps:
-      - data/processed/
-      - models
-      - src/models/test_model.py
+    - data/processed/
+    - models
+    - src/models/test_model.py
     params:
-      - test
+    - test
