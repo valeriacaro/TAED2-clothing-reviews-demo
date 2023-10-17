@@ -1,4 +1,4 @@
-from models.model_dl import *
+from src.models.old_models.model_dl import *
 import time
 import random
 from sklearn.model_selection import train_test_split
