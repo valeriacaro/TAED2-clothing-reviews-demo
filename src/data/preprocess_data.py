@@ -62,6 +62,7 @@ def clean_df(dataframe: pd.DataFrame) -> pd.DataFrame:
     dataframe = binarization(dataframe)
     dataframe = dropping(dataframe)
     dataframe = dataframe.dropna(subset=['Review Text'])
+    dataframe = dataframe.dropna(subset=['Top Product'])
 
     return dataframe
 
