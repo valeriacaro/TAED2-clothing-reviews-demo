@@ -1,21 +1,4 @@
 stages:
-  train:
-    cmd: python -m src.models.train_model
-    deps:
-    - data/processed/
-    - src/models/train_model.py
-    params:
-    - train
-    outs:
-    - models/
-  test:
-    cmd: python -m src.models.test_model
-    deps:
-    - data/processed/
-    - models
-    - src/models/test_model.py
-    params:
-    - test
   prepare:
     cmd: python -m src.features.prepare
     deps:

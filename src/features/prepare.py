@@ -24,9 +24,9 @@ train_data = data.sample(frac=params["train_size"], random_state=params["random_
 test_data = data.drop(train_data.index)
 
 
-path_to_processed = "../../data/processed"
+path_to_processed = "data/processed"
 
-train_data_path = path_to_processed + "/train_data_processed.csv"
+train_data_path = path_to_processed + "/processed/train_data_processed.csv"
 test_data_path = path_to_processed + "/test_data_processed.csv"
 
 
