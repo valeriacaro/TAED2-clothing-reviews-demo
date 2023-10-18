@@ -1,0 +1,23 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python -m src.features.prepare
+    deps:
+    - path: src/features/prepare.py
+      md5: 22e1157187207418162ed8772f9a6f4d
+      size: 994
+    params:
+      params.yaml:
+        prepare.random_state: 2023
+        prepare.test_size: 0.2
+        prepare.train_size: 0.8
+    outs:
+    - path: data/processed/test_data_processed.csv
+      md5: 7984ac5f5536cf24730d196add6850ea
+      size: 1641089
+    - path: data/processed/train_data_processed.csv
+      md5: f09fe5d5e5d3b86527b08d7b238db0df
+      size: 6528888
+    - path: data/raw/raw_data.csv
+      md5: 5fc37783644eff9cfeb9b62d84a1a63a
+      size: 8483448
