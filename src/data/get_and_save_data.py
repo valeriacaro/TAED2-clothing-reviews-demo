@@ -1,7 +1,9 @@
 import kaggle
 import json
 import os
+from datasets import dataset
 import pandas as pd
+from src import *
 
 
 def get_data_from_source() -> None:
@@ -17,9 +19,9 @@ def get_data_from_source() -> None:
     """
 
     # path where to save data csv
-    download_dir = "../../data/raw"
+    download_dir = RAW_DATA_PATH
     # path where to find data to get kaggle dataset
-    connection_source = "../../data/external/external_connection.json"
+    connection_source = ROOT_PATH / "src" / "config" / "kaggle_connection_config.json"
 
     with open(connection_source, 'r') as file:
         source_data = json.load(file)
@@ -72,6 +74,13 @@ def save_data_to_local(
     """
 
     dataframe.to_csv(path_to_save, index=False)
+
+
+def load_data_from_remote(
+        data_to_load: str
+):
+
+    dataset.save_to_disk(data_to_load)
 
 
 if __name__ == '__main__':

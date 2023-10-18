@@ -1,4 +1,10 @@
 stages:
+  extract_data:
+    cmd: python -m src.features.extract
+    deps:
+    - src/features/extract.py
+    outs:
+    - data/raw/raw_data.csv
   prepare:
     cmd: python -m src.features.prepare
     deps:
