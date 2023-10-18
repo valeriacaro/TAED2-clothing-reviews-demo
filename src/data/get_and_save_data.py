@@ -1,7 +1,6 @@
 import kaggle
 import json
 import os
-from datasets import dataset
 import pandas as pd
 from src import *
 
@@ -80,6 +79,7 @@ def load_data_from_remote(
         data_to_load: str
 ):
 
+    dataset = datasets.load_dataset("origin")
     dataset.save_to_disk(data_to_load)
 
 
