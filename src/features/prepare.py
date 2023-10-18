@@ -5,7 +5,7 @@ from src import *
 
 if __name__ == '__main__':
 
-    params_path = Path("../../params.yaml")
+    params_path = ROOT_PATH / "dvc.yaml"
 
     data = load_data_from_remote(RAW_DATA_PATH)
 
