@@ -5,9 +5,9 @@ from src import *
 
 if __name__ == '__main__':
 
-    params_path = ROOT_PATH / "dvc.yaml"
+    params_path = ROOT_PATH / "params.yaml"
 
-    data = load_data_from_remote(RAW_DATA_PATH)
+    data = get_data_from_local(ROOT_PATH / 'data' / 'raw' / 'raw_data.csv')
 
     with open(params_path, "r") as params_file:
         try:
@@ -22,5 +22,5 @@ if __name__ == '__main__':
     train_data = data.sample(frac=params["train_size"], random_state=params["random_state"])
     test_data = data.drop(train_data.index)
 
-    save_data_to_local(PROCESSED_DATA_PATH, train_data)
-    save_data_to_local(PROCESSED_DATA_PATH, test_data)
+    save_data_to_local(PROCESSED_TRAIN_DATA_PATH, train_data)
+    save_data_to_local(PROCESSED_TEST_DATA_PATH, test_data)
