@@ -22,5 +22,13 @@ if __name__ == '__main__':
     train_data = data.sample(frac=params["train_size"], random_state=params["random_state"])
     test_data = data.drop(train_data.index)
 
-    save_data_to_local(str(PROCESSED_TRAIN_DATA_PATH) + 'train_data.csv', train_data)
-    save_data_to_local(str(PROCESSED_TEST_DATA_PATH) + 'train_data.csv', test_data)
+    isExist = os.path.exists(PROCESSED_TRAIN_DATA_PATH)
+    if not isExist:
+        os.makedirs(PROCESSED_TRAIN_DATA_PATH)
+
+    isExist = os.path.exists(PROCESSED_TEST_DATA_PATH)
+    if not isExist:
+        os.makedirs(PROCESSED_TEST_DATA_PATH)
+
+    save_data_to_local(PROCESSED_TRAIN_DATA_PATH / 'train_data.csv', train_data)
+    save_data_to_local(PROCESSED_TEST_DATA_PATH / 'test_data.csv', test_data)

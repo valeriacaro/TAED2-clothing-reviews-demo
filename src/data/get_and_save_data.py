@@ -73,7 +73,7 @@ def save_data_to_local(
             None
     """
 
-    dataframe.to_csv(path_to_save, index=False)
+    dataframe.to_csv(path_to_save.as_posix(), index=False)
 
 
 def load_data_from_remote(
