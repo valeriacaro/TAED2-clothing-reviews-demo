@@ -2,6 +2,7 @@ import kaggle
 import json
 import os
 import pandas as pd
+import dvc.api
 from src import *
 
 
@@ -78,9 +79,13 @@ def save_data_to_local(
 def load_data_from_remote(
         data_to_load: str
 ):
+    with dvc.api.open(
+            data_to_load.as_posix(),
+            repo='https://dagshub.com/claudialen/TAED2-clothing-reviews'
+    ) as f:
+        data = pd.read_csv(f)
 
-    dataset = datasets.load_dataset("origin")
-    dataset.save_to_disk(data_to_load)
+    return data
 
 
 if __name__ == '__main__':

@@ -6,4 +6,5 @@ load_dotenv()
 ROOT_PATH = Path(Path(__file__).resolve().parent.parent)
 
 RAW_DATA_PATH = ROOT_PATH / "data" / "raw"
-PROCESSED_DATA_PATH = ROOT_PATH / "data" / "processed"
+PROCESSED_TRAIN_DATA_PATH = ROOT_PATH / "data" / "processed" / "train"
+PROCESSED_TEST_DATA_PATH = ROOT_PATH / "data" / "processed" / "test"
