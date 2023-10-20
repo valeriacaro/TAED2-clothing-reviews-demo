@@ -19,4 +19,4 @@ torch==2.0.0
 tqdm==4.66.1
 kaggle==1.6.0a6
 nltk==3.8.1
-
+great_expectations==0.17.23
