@@ -24,3 +24,5 @@ transformers
 datasets
 evaluate
 joblib
+pylint==3.0.1
+pyenchant==3.2.2

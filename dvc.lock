@@ -4,8 +4,8 @@ stages:
     cmd: python -m src.features.extract
     deps:
     - path: src/features/extract.py
-      md5: fefb0bd84eacbe84f990c43c76849c4a
-      size: 179
+      md5: 09796cedecb8a41599b6941f9a4c463f
+      size: 190
     outs:
     - path: data/raw
       md5: 7be650a196bf092d88cd6a36e33a609f.dir
