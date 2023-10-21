@@ -1,10 +1,19 @@
-import nltk
+'''
+This module is created to unify all functions related
+to processing text in order to improve the results of
+our model. This includes tokenization and getting
+stemmed text.
+'''
+
 import string
 import re
+import nltk
+import pandas as pd
 from nltk.tokenize import word_tokenize
 from nltk.stem import SnowballStemmer
 from nltk.corpus import stopwords
-from src.data.get_and_save_data import *
+from src.data.get_and_save_data import get_data_from_local, save_data_to_local
+from src import ROOT_PATH
 
 
 def tokenization(dataframe) -> pd.DataFrame:
@@ -79,13 +88,13 @@ def process_df(dataframe: pd.DataFrame) -> pd.DataFrame:
 
 if __name__ == '__main__':
 
-    path_to_interim_data = "./data/interim/interim_data.csv"
-    df = get_data_from_local(path_to_interim_data)
+    INTERIM_DATA_PATH = ROOT_PATH / 'data' / 'interim' / 'interim_data.csv'
+    df = get_data_from_local(INTERIM_DATA_PATH)
 
     df = process_df(df)
 
-    path_to_processed_data = "./data/processed/processed_data.csv"
+    PROCESSED_DATA_PATH = ROOT_PATH / 'data' / 'processed' / 'processed_data.csv'
     save_data_to_local(
-        path_to_processed_data,
+        PROCESSED_DATA_PATH,
         df
     )
