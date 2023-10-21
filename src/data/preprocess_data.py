@@ -1,4 +1,15 @@
-from src.data.get_and_save_data import *
+'''
+This module is created to unify all functions
+related to preprocess data before performing
+text processing on it. This includes removing
+some columns or mapping values.
+'''
+
+import pandas as pd
+from src import ROOT_PATH, RAW_DATA_PATH
+from src.data.get_and_save_data import (get_data_from_local,
+                                        get_data_from_source,
+                                        save_data_to_local)
 
 GET_DATA_FROM_SOURCE = True
 
@@ -72,16 +83,12 @@ if __name__ == '__main__':
     if GET_DATA_FROM_SOURCE:
         get_data_from_source()
 
-
-    # Navigate to the parent directory
-    path_to_raw_data = "./data/raw/raw_data.csv"
-    df = get_data_from_local(path_to_raw_data)
+    df = get_data_from_local(RAW_DATA_PATH)
 
     df = clean_df(df)
 
-    path_to_interim_data = "./data/interim/interim_data.csv"
+    INTERIM_DATA_PATH = ROOT_PATH / 'data' / 'interim' / 'interim_data.csv'
     save_data_to_local(
-        path_to_interim_data,
+        INTERIM_DATA_PATH,
         df
     )
-
