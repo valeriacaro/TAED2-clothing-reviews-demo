@@ -1,9 +1,13 @@
-import kaggle
+'''
+This module is created to unify all functions to
+retrieve/save data from the directories desired.
+'''
+
 import json
 import os
+import kaggle
 import pandas as pd
-import dvc.api
-from src import *
+from src import RAW_DATA_PATH, ROOT_PATH
 
 
 def get_data_from_source() -> None:
@@ -23,7 +27,7 @@ def get_data_from_source() -> None:
     # path where to find data to get kaggle dataset
     connection_source = ROOT_PATH / "src" / "config" / "kaggle_connection_config.json"
 
-    with open(connection_source, 'r') as file:
+    with open(connection_source, 'r', encoding='utf-8') as file:
         source_data = json.load(file)
 
     # save json data
@@ -74,18 +78,6 @@ def save_data_to_local(
     """
 
     dataframe.to_csv(path_to_save.as_posix(), index=False)
-
-
-def load_data_from_remote(
-        data_to_load: str
-):
-    with dvc.api.open(
-            data_to_load.as_posix(),
-            repo='https://dagshub.com/claudialen/TAED2-clothing-reviews'
-    ) as f:
-        data = pd.read_csv(f)
-
-    return data
 
 
 if __name__ == '__main__':
