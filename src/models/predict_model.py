@@ -1,43 +1,56 @@
-from train_model import  *
-from sklearn.metrics import accuracy_score
+from train_model import *
+import evaluate
 
-def prediction(model, test_data, y_test) -> tuple:
 
+def prediction(eval_dataloader, model):
     """
-    Make predictions using a trained model and calculate accuracy.
 
     Args:
-        model (torch.nn.Module): The trained model.
-        test_data (list): List of test data.
-        y_test (numpy.ndarray): True labels for the test data.
+        eval_dataloader (DataLoader): A DataLoader containing testing data.
+        model (transformers.BertForSequenceClassification): The machine learning model to be evaluated.
 
     Returns:
-        tuple: A tuple containing predicted labels and accuracy.
-    """
-
-    y_pred = validate(model, test_data, batch_size, token_size)[0]
-    accuracy = accuracy_score(y_test, y_pred)
-    return y_pred, accuracy
-
-
-def eval_metrics(actual, pred):
+        None
 
     """
-    Calculate evaluation metrics for regression tasks.
+    # Load the evaluation metric
+    metric1 = evaluate.load("accuracy")
 
-    Args:
-        actual (numpy.ndarray): True target values.
-        pred (numpy.ndarray): Predicted target values.
+    # Tells the model that we are evaluting the model performance
+    model.eval()
 
-    Returns:
-        tuple: A tuple containing RMSE (Root Mean Squared Error), MAE (Mean Absolute Error), and R-squared (R2) scores.
-    """
+    #  A list for all logits
+    logits_all = []
 
-    rmse = np.sqrt(mean_squared_error(actual, pred))
-    mae = mean_absolute_error(actual, pred)
-    r2 = r2_score(actual, pred)
-    return rmse, mae, r2
+    # A list for all predicted probabilities
+    predicted_prob_all = []
+
+    # A list for all predicted labels
+    predictions_all = []
+
+    # Loop through the batches in the evaluation dataloader
+    for batch in eval_dataloader:
+        # Disable the gradient calculation
+        with torch.no_grad():
+            # Compute the model output
+            outputs = model(**batch)
+        # Get the logits
+        logits = outputs.logits
+        # Append the logits batch to the list
+        logits_all.append(logits)
+        # Get the predicted probabilities for the batch
+        predicted_prob = torch.softmax(logits, dim=1)
+        # Append the predicted probabilities for the batch to all the predicted probabilities
+        predicted_prob_all.append(predicted_prob)
+        # Get the predicted labels for the batch
+        predictions = torch.argmax(logits, dim=-1)
+        # Append the predicted labels for the batch to all the predictions
+        predictions_all.append(predictions)
+        # Add the prediction batch to the evaluation metric
+        metric1.add_batch(predictions=predictions, references=batch["labels"])
+
+    print(predictions_all)
+
 
 if __name__ == '__main__':
-
     pass

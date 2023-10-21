@@ -1,341 +1,166 @@
-from src.models.old_models.model_dl import *
-import time
-import random
-from sklearn.model_selection import train_test_split
-import numpy as np
+# IMPORTS
+# Data processing
+import pandas as pd
+
+# Modeling
+import torch
+from torch.utils.data import DataLoader
+from torch.optim import AdamW
+from transformers import AutoTokenizer, get_scheduler
+
+# Hugging Face Dataset
+from datasets import Dataset
 
 
-# HYPERPARAMETERS
-hidden_size = 256
-embedding_size = 128
-batch_size = 512
-token_size = 200000
-epochs = 10
-bidirectional = True
-seed = 1111
+# FUNCTIONS
+def read_data(path_file) -> pd.DataFrame:
+    """
+    Read data from a CSV file.
+    Args:
+        path_file (str): The file path to the data.
 
-
-def set_seed():
-
-    """Set the random seed for reproducibility."""
-
-    random.seed(seed)
-    np.random.RandomState(seed)
-    torch.manual_seed(seed)
-
-
-def stemming(df, stem=True) -> tuple:
+    Returns:
+        pd.DataFrame: A pandas DataFrame containing the data from the CSV file.
 
     """
-        Preprocesses data and selects features and target based on the stemming flag.
-        Args:
-            df (DataFrame): The input DataFrame.
-            stem (bool): A flag indicating whether stemming is applied.
-        Returns:
-            tuple: A tuple containing the feature variable (x) and the target variable (y).
-    """
+    return pd.read_csv(path_file)
 
+
+def stemming(df, stem=True) -> pd.DataFrame:
+    """
+    Selects features based on the stemming flag (stemmed text or not).
+    Args:
+        df (pd.DataFrame): The input DataFrame.
+        stem (bool): A flag indicating whether stemming is applied.
+
+    Returns: A pd.DataFrame containing the feature variable (Review Text or Stemmed Review Text)
+            and the target variable (Top Product).
+
+    """
     if stem:
-        x = df["Stemmed Review Text"].values
+        df.drop(['Review Text'], axis='columns', inplace=True)
     else:
-        x = df["Review Text"].values
-    y = df["Top Product"].values
-    return x, y
+        df.drop(['Stemmed Review Text'], axis='columns', inplace=True)
+    return df
 
 
-def create_word_vocab(x):
+def tokenize_dataset(data) -> Dataset:
+    """
+    Tokenizes "Review Text" data in a Hugging Face arrow dataset using a specified tokenizer.
+
+    Args:
+        data (datasets.arrow_dataset.Dataset): The input Hugging Face arrow dataset.
+
+    Returns:
+        datasets.arrow_dataset.Dataset: Data tokenized.
 
     """
-        Create a vocabulary for word tokens.
+    # Tokenizer from a pretrained model
+    tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 
-        Args:
-            x (list): List of input text data containing word tokens.
+    return tokenizer(data["Review Text"], max_length=128, truncation=True, padding="max_length")
 
-        Returns:
-            tuple: A tuple containing the word vocabulary (vocab), pad token index (pad_index), and unknown token index (unk_index).
+
+def tokenize_dataset_stem(data) -> Dataset:
     """
+    Tokenizes "Stemmed Review Text" data in a Hugging Face arrow dataset using a specified tokenizer.
 
-    vocab = Dictionary()
-    pad_token = '<pad>'
-    unk_token = '<unk>'
-    pad_index = vocab.add_token(pad_token)
-    unk_index = vocab.add_token(unk_token)
+    Args:
+        data (datasets.arrow_dataset.Dataset): the input Hugging Face arrow dataset.
 
-    # Join the list of strings into a single string
-    combined_text = ' '.join(str(item) for item in x)
-
-    # Split the combined text into words
-    words = combined_text.split()
-
-    # Create a sorted tuple of unique words
-    unique_sorted_words = sorted(set(words))
-
-    # Add words to the custom vocabulary
-    for word in unique_sorted_words:
-        vocab.add_token(word)
-
-    # words = set(' '.join(x).split())
-    # for word in sorted(words):
-    #     vocab.add_token(word)
-    return vocab, pad_index, unk_index
-
-
-def create_label_vocab(y):
+    Returns:
+        datasets.arrow_dataset.Dataset: data tokenized.
 
     """
-        Create a vocabulary for labels.
+    # Tokenizer from a pretrained model
+    tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 
-        Args:
-            y (list): List of labels.
+    return tokenizer(data["Stemmed Review Text"], max_length=128, truncation=True, padding="max_length")
 
-        Returns:
-            Dictionary: The label vocabulary.
+
+def preprocess_and_tokenize_data(data, stem=True) -> Dataset:
     """
+    Preprocess and tokenize the input data.
+    Args:
+        data (pd.DataFrame): The input DataFrame.
+        stem (bool): A flag indicating whether stemming is applied.
 
-    label_vocab = Dictionary()
-    # Create a set of labels from the training labels (0 or 1)
-    labels = set(y)
-    for label in sorted(labels):
-        label_vocab.add_token(label)
-    return label_vocab
-
-
-def convert_data_to_indices(x, y, vocab, label_vocab):
+    Returns:
+        dataset (Dataset): The input data in a PyTorch tensor format.
 
     """
-        Convert data to token indices.
+    # Convert Python DataFrame to Hugging Face arrow dataset
+    hg_data = Dataset.from_pandas(data)
+    # Tokenize the data sets
+    if stem:
+        dataset = hg_data.map(tokenize_dataset_stem)
+        # Remove the review and index columns because it will not be used in the model
+        dataset = dataset.remove_columns(["Stemmed Review Text"])
+    else:
+        dataset = hg_data.map(tokenize_dataset)
+        # Remove the review and index columns because it will not be used in the model
+        dataset = dataset.remove_columns(["Review Text"])
 
-        Args:
-            x (list): List of input text data containing word tokens.
-            y (list): List of labels.
-            vocab (Dictionary): Word vocabulary.
-            label_vocab (Dictionary): Label vocabulary.
+    # Rename label to labels because the model expects the name labels
+    dataset = dataset.rename_column("Top Product", "labels")
 
-        Returns:
-            tuple: A tuple containing the converted input data (x_idx) and labels (y_idx) as token indices.
+    # Change the format to PyTorch tensors
+    dataset.set_format("torch")
+
+    return dataset
+
+
+def training(train_dataloader, model):
     """
+    Train a machine learning model using the provided DataLoader and model.
+    Args:
+        train_dataloader (DataLoader): A DataLoader containing training data.
+        model (transformers.BertForSequenceClassification): The machine learning model to be trained.
 
-    x_idx = []
-
-    for sentence in x:
-        tokens = sentence.split()
-        indexes = np.array([vocab.token2idx[word] for word in tokens])
-        x_idx.append(indexes)
-
-    y_idx = np.array([label_vocab.token2idx[label] for label in y])
-    return x_idx, y_idx
-
-def split_data(x, y):
-
-    """
-        Split data into training and validation sets.
-
-        Args:
-            x (list): List of input data.
-            y (list): List of labels.
-
-        Returns:
-            tuple: A tuple containing training and validation data splits.
-    """
-
-    x_train, x_temp, y_train, y_temp = train_test_split(x, y, test_size=0.3, random_state=seed)
-    x_val, x_test, y_val, y_test = train_test_split(x_temp, y_temp, test_size=0.5, random_state=seed)
-
-    return (x_train, y_train), (x_val, y_val), (x_test, y_test)
-
-
-def batch_generator(data, batch_size, token_size):
+    Returns:
+        None
 
     """
-        Yield elements from data in chunks with a maximum of batch_size sequences and token_size tokens.
+    # Number of epochs
+    num_epochs = 3
 
-        Args:
-            data (list): List of input sequences.
-            batch_size (int): Maximum batch size.
-            token_size (int): Maximum token size for each batch.
+    # Number of training steps
+    num_training_steps = num_epochs * len(train_dataloader)
 
-        Returns:
-            generator: A generator that yields batches of data.
-    """
+    # Optimizer
+    optimizer = AdamW(params=model.parameters(), lr=5e-6)
 
-    minibatch, sequences_so_far, tokens_so_far = [], 0, 0
-    for ex in data:
-        seq_len = len(ex[0])
-        if seq_len > token_size:
-            ex = (ex[0][:token_size], ex[1])
-            seq_len = token_size
-        minibatch.append(ex)
-        sequences_so_far += 1
-        tokens_so_far += seq_len
-        if sequences_so_far == batch_size or tokens_so_far == token_size:
-            yield minibatch
-            minibatch, sequences_so_far, tokens_so_far = [], 0, 0
-        elif sequences_so_far > batch_size or tokens_so_far > token_size:
-            yield minibatch[:-1]
-            minibatch, sequences_so_far, tokens_so_far = minibatch[-1:], 1, len(minibatch[-1][0])
-    if minibatch:
-        yield minibatch
+    # Set up the learning rate scheduler
+    lr_scheduler = get_scheduler(name="linear",
+                                 optimizer=optimizer,
+                                 num_warmup_steps=0,
+                                 num_training_steps=num_training_steps)
 
+    # Use GPU if it is available
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    model.to(device)
 
-def pool_generator(data, batch_size, token_size, shuffle=False):
-
-    """
-        Sort within buckets, then batch, then shuffle batches.
-
-        Args:
-            data (list): List of input sequences.
-            batch_size (int): Maximum batch size.
-            token_size (int): Maximum token size for each batch.
-            shuffle (bool): Whether to shuffle the batches.
-
-        Returns:
-            generator: A generator that yields batches of data.
-    """
-
-    for p in batch_generator(data, batch_size * 100, token_size * 100):
-        p_batch = batch_generator(sorted(p, key=lambda t: len(t[0]), reverse=True), batch_size, token_size)
-        p_list = list(p_batch)
-        if shuffle:
-            for b in random.sample(p_list, len(p_list)):
-                yield b
-        else:
-            for b in p_list:
-                yield b
-
-def get_model(ntokens, nlabels, pad_index):
-
-    """
-        Get the model and optimizer for training.
-
-        Returns:
-            tuple: A tuple containing the model and optimizer.
-    """
-
-    model = CharRNNClassifier(ntokens, embedding_size, hidden_size, nlabels, bidirectional=bidirectional,
-                              pad_idx=pad_index)
-    optimizer = torch.optim.Adam(model.parameters())
-    return model, optimizer
-
-
-def train(model, optimizer, data, batch_size, token_size, max_norm=1, log=False):
-
-    """
-        Train the model on the provided data.
-
-        Args:
-            model (torch.nn.Module): The model to be trained.
-            optimizer (torch.optim.Optimizer): The optimizer for training.
-            data (list): List of training data.
-            batch_size (int): Maximum batch size.
-            token_size (int): Maximum token size for each batch.
-            max_norm (float): Maximum gradient norm for gradient clipping.
-            log (bool): Whether to log training statistics.
-
-        Returns:
-            tuple: A tuple containing the training accuracy and loss.
-    """
-
+    # Tells the model that we are training the model
     model.train()
-    total_loss = 0
-    ncorrect = 0
-    nsentences = 0
-    ntokens = 0
-    niterations = 0
-    criterion = torch.nn.CrossEntropyLoss(reduction='sum')
-    for batch in pool_generator(data, batch_size, token_size, shuffle=True):
-        # Get input and target sequences from batch
-        X = [torch.from_numpy(d[0]) for d in batch]
-        X_lengths = [x.numel() for x in X]
-        ntokens += sum(X_lengths)
-        X_lengths = torch.tensor(X_lengths, dtype=torch.long)
-        y = torch.tensor([d[1] for d in batch], dtype=torch.long)
-        # Pad the input sequences to create a matrix
-        X = torch.nn.utils.rnn.pad_sequence(X)
-        model.zero_grad()
-        output = model(X, X_lengths)
-        loss = criterion(output, y)
-        loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(),
-                                       max_norm)  # Gradient clipping https://www.kaggle.com/c/wili4/discussion/231378
-        optimizer.step()
-        # Training statistics
-        total_loss += loss.item()
-        ncorrect += (torch.max(output, 1)[1] == y).sum().item()
-        nsentences += y.numel()
-        niterations += 1
-
-    total_loss = total_loss / nsentences
-    accuracy = 100 * ncorrect / nsentences
-    if log:
-        print(f'Train: wpb={ntokens // niterations}, bsz={nsentences // niterations}, num_updates={niterations}')
-    return accuracy, total_loss
+    # Loop through the epochs
+    for epoch in range(num_epochs):
+        # Loop through the batches
+        for batch in train_dataloader:
+            # Compute the model output for the batch
+            outputs = model(**batch)
+            # Loss computed by the model
+            loss = outputs.loss
+            # backpropagates the error to calculate gradients
+            loss.backward()
+            # Update the model weights
+            optimizer.step()
+            # Learning rate scheduler
+            lr_scheduler.step()
+            # Clear the gradients
+            optimizer.zero_grad()
 
 
-def validate(model, data, batch_size, token_size):
-    """
-        Validate the model on the provided data.
-
-        Args:
-            model (torch.nn.Module): The model to be validated.
-            data (list): List of validation data.
-            batch_size (int): Maximum batch size.
-            token_size (int): Maximum token size for each batch.
-
-        Returns:
-            tuple: A tuple containing predictions and validation accuracy.
-    """
-    model.eval()
-    # calculate accuracy on validation set
-    ncorrect = 0
-    nsentences = 0
-    predictions = []
-    with torch.no_grad():
-        for batch in pool_generator(data, batch_size, token_size):
-            # Get input and target sequences from batch
-            X = [torch.from_numpy(d[0]) for d in batch]
-            X_lengths = torch.tensor([x.numel() for x in X], dtype=torch.long)
-            y = torch.tensor([d[1] for d in batch], dtype=torch.long)
-            # Pad the input sequences to create a matrix
-            X = torch.nn.utils.rnn.pad_sequence(X)
-            answer = model(X, X_lengths)
-            ncorrect += (torch.max(answer, 1)[1] == y).sum().item()
-            nsentences += y.numel()
-            # Add predictions to the list
-            predictions.extend(torch.max(answer, 1)[1].tolist())
-
-        dev_acc = 100 * ncorrect / nsentences
-
-    return predictions, dev_acc
-
-
-def model_training(train_data, val_data, ntokens, nlabels, pad_index):
-
-    """
-        Train the model on the training data.
-
-        Args:
-            train_data (list): List of training data.
-            val_data (list): List of validation data.
-
-        Returns:
-            torch.nn.Module: The trained model.
-    """
-
-    train_accuracy = []
-    valid_accuracy = []
-    model, optimizer = get_model(ntokens, nlabels, pad_index)
-    print(f'Training cross-validation model for {epochs} epochs')
-    t0 = time.time()
-    # Model training
-    for epoch in range(1, epochs + 1):
-        acc = train(model, optimizer, train_data, batch_size, token_size, log=epoch == 1)[0]
-        train_accuracy.append(acc)
-        print(f'| epoch {epoch:03d} | train accuracy={acc:.1f}% ({time.time() - t0:.0f}s)')
-        acc = validate(model, val_data, batch_size, token_size)[1]
-        valid_accuracy.append(acc)
-        print(f'| epoch {epoch:03d} | valid accuracy={acc:.1f}%')
-    return model
-
+# MAIN
 if __name__ == '__main__':
 
     pass
