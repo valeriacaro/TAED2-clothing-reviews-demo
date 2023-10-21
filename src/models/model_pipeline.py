@@ -1,24 +1,35 @@
-from test_model import *
-from transformers import AutoModelForSequenceClassification
+'''
+This module is implemented to run the whole
+model pipeline on local, if desired. It
+includes options to train the model from zero
+or load it from the repository.
+'''
+
 import joblib
-from src import PROCESSED_TRAIN_DATA_PATH, PROCESSED_TEST_DATA_PATH
+import torch
+from transformers import AutoModelForSequenceClassification
+from src import ROOT_PATH, PROCESSED_TRAIN_DATA_PATH, PROCESSED_TEST_DATA_PATH
+from src.models.train_model import stemming, preprocess_and_tokenize_data, training, DataLoader
+from src.models.test_model import score_function
+from src.data.get_and_save_data import get_data_from_local
 
 TRAIN_ALL_MODEL = False
 MODELS_DIR = ROOT_PATH / "models"
 
 if __name__ == '__main__':
+
     # Read the train and test datasets
-    train_data = read_data(PROCESSED_TRAIN_DATA_PATH / "train_data.csv")
-    test_data = read_data(PROCESSED_TEST_DATA_PATH / "test_data.csv")
+    train_data = get_data_from_local(PROCESSED_TRAIN_DATA_PATH / "train_data.csv")
+    test_data = get_data_from_local(PROCESSED_TEST_DATA_PATH / "test_data.csv")
 
     # Set this flag based on whether stemming is applied or not
-    use_stemming = True
-    train_data = stemming(train_data, use_stemming)
-    test_data = stemming(test_data, use_stemming)
+    USE_STEMMING = True
+    train_data = stemming(train_data, USE_STEMMING)
+    test_data = stemming(test_data, USE_STEMMING)
 
     # Preprocess and tokenize data
-    dataset_train = preprocess_and_tokenize_data(train_data, use_stemming)
-    dataset_test = preprocess_and_tokenize_data(test_data, use_stemming)
+    dataset_train = preprocess_and_tokenize_data(train_data, USE_STEMMING)
+    dataset_test = preprocess_and_tokenize_data(test_data, USE_STEMMING)
 
     # Empty cache
     torch.cuda.empty_cache()

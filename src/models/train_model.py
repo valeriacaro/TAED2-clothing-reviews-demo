@@ -13,19 +13,6 @@ from datasets import Dataset
 
 
 # FUNCTIONS
-def read_data(path_file) -> pd.DataFrame:
-    """
-    Read data from a CSV file.
-    Args:
-        path_file (str): The file path to the data.
-
-    Returns:
-        pd.DataFrame: A pandas DataFrame containing the data from the CSV file.
-
-    """
-    return pd.read_csv(path_file)
-
-
 def stemming(df, stem=True) -> pd.DataFrame:
     """
     Selects features based on the stemming flag (stemmed text or not).
