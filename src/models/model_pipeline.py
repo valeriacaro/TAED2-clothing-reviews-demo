@@ -1,49 +1,37 @@
-from predict_model import *
-from src.data.get_and_save_data import *
+from test_model import *
+from transformers import AutoModelForSequenceClassification
+import joblib
+from src import PROCESSED_TRAIN_DATA_PATH, PROCESSED_TEST_DATA_PATH
 
 TRAIN_ALL_MODEL = False
+MODELS_DIR = ROOT_PATH / "models"
 
 if __name__ == '__main__':
-
-    # Init random seed to get reproducible results
-    set_seed()
-
-    path_to_processed_data = "./data/processed/processed_data.csv"
-
-    df = get_data_from_local(path_to_processed_data)
+    # Read the train and test datasets
+    train_data = read_data(PROCESSED_TRAIN_DATA_PATH / "train_data.csv")
+    test_data = read_data(PROCESSED_TEST_DATA_PATH / "test_data.csv")
 
     # Set this flag based on whether stemming is applied or not
     use_stemming = True
-    x, y = stemming(df, use_stemming)
+    train_data = stemming(train_data, use_stemming)
+    test_data = stemming(test_data, use_stemming)
 
-    word_vocab, pad_index, unk_index = create_word_vocab(x)
-    label_vocab = create_label_vocab(y)
+    # Preprocess and tokenize data
+    dataset_train = preprocess_and_tokenize_data(train_data, use_stemming)
+    dataset_test = preprocess_and_tokenize_data(test_data, use_stemming)
 
-    # Convert the data to indices
-    x_idx, y_idx = convert_data_to_indices(x, y, word_vocab, label_vocab)
+    # Empty cache
+    torch.cuda.empty_cache()
 
-    # Split the data into training (70%), validation (15%), and test (15%) sets
-    (x_train, y_train), (x_val, y_val), (x_test, y_test) = split_data(x_idx, y_idx)
-
-    train_data = [(x, y) for x, y in zip(x_train, y_train)]
-    val_data = [(x, y) for x, y in zip(x_val, y_val)]
-    test_data = [(x, y) for x, y in zip(x_test, y_test)]
-
-    ntokens = len(word_vocab)
-    nlabels = len(label_vocab)
+    # DataLoader
+    train_dataloader = DataLoader(dataset=dataset_train, shuffle=True, batch_size=4)
+    eval_dataloader = DataLoader(dataset=dataset_test, batch_size=4)
 
     if TRAIN_ALL_MODEL:
-        model = model_training(train_data, val_data, ntokens, nlabels, pad_index)
+        # Load model
+        model = AutoModelForSequenceClassification.from_pretrained("bert-base-cased", num_labels=2)
+        training(train_dataloader, model)
     else:
-        model = torch.jit.load('./models/model.pth')
+        model = joblib.load(MODELS_DIR / 'transfer-learning.joblib', mmap_mode='r')
 
-    y_pred, acc = prediction(model, test_data, y_test)
-
-    (rmse, mae, r2) = eval_metrics(y_test, y_pred)
-
-    print("SVC model (hidden_size=%f):" % (hidden_size))
-    print("SVC model (embedding_size=%f):" % (embedding_size))
-    print("  RMSE: %s" % rmse)
-    print("  MAE: %s" % mae)
-    print("  R2: %s" % r2)
-
+    score_function(eval_dataloader, model)
