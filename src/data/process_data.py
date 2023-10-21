@@ -7,13 +7,14 @@ stemmed text.
 
 import string
 import re
+import yaml
 import nltk
 import pandas as pd
 from nltk.tokenize import word_tokenize
 from nltk.stem import SnowballStemmer
 from nltk.corpus import stopwords
 from src.data.get_and_save_data import get_data_from_local, save_data_to_local
-from src import ROOT_PATH
+from src import ROOT_PATH, PROCESSED_TEST_DATA_PATH, PROCESSED_TRAIN_DATA_PATH
 
 
 def tokenization(dataframe) -> pd.DataFrame:
@@ -93,8 +94,16 @@ if __name__ == '__main__':
 
     df = process_df(df)
 
-    PROCESSED_DATA_PATH = ROOT_PATH / 'data' / 'processed' / 'processed_data.csv'
-    save_data_to_local(
-        PROCESSED_DATA_PATH,
-        df
-    )
+    params_path = ROOT_PATH / "params.yaml"
+    with open(params_path, "r", encoding='utf-8') as params_file:
+        try:
+            params = yaml.safe_load(params_file)
+            params = params["prepare"]
+        except yaml.YAMLError as exc:
+            print(exc)
+
+    train_data = df.sample(frac=params["train_size"], random_state=params["random_state"])
+    test_data = df.drop(train_data.index)
+
+    save_data_to_local(PROCESSED_TRAIN_DATA_PATH / 'train_data.csv', train_data)
+    save_data_to_local(PROCESSED_TEST_DATA_PATH / 'test_data.csv', test_data)
