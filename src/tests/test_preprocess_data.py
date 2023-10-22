@@ -13,27 +13,23 @@ def test_dropping_output():
     but not with all on the list of the function,
     just keeps important columns.
     """
-
-    data = {
-        'Index': 1,
-        'Review': 'good shirt',
-        'Age': 44,
-        'Rating': 5,
-        'Top Product': 1
-    }
+    # Create a sample dataframe
+    data = [['good shirt', 44, 5, 1]]
 
     dataframe = pd.DataFrame(
-        data, index=['Index'],
-        columns=['Review', 'Age', 'Rating', 'Top Product']
+        data, index=[1],
+        columns=['Review Text', 'Age', 'Rating', 'Top Product']
     )
-
+    # Call dropping function
     dataframe = dropping(dataframe)
-
+    # Only Review Text and Top Product columns should exist
     assert 'Age' not in dataframe.columns
     assert 'Rating' not in dataframe.columns
+    assert 'Review Text' in dataframe.columns
+    assert 'Top Product' in dataframe.columns
 
 
-def test_binarization_output(Rate, Top):
+def test_binarization_output(rate, top):
     """
     Checks if given a dataframe with
     a Rating column, binarization returns
@@ -41,35 +37,70 @@ def test_binarization_output(Rate, Top):
     but with Top Product with the respective
     mapping.
     """
-
+    # Create a sample dataframe
     data = {
         'Index': 1,
-        'Rating': Rate
+        'Rating': rate
     }
     dataframe = pd.DataFrame(
         data, index=['Index'], columns=['Rating']
     )
-
+    # Call the binarization function
     dataframe = binarization(dataframe)
-
+    # Check if the Top Product column has the expected value
     assert 'Top Product' in dataframe.columns
-    assert (dataframe['Top Product'] == Top).all()
+    assert (dataframe['Top Product'] == top).all()
 
 
 @pytest.mark.parametrize(
-    "Rating, Top_Product",
+    "rating, top_product",
     [
         (5, 1),
-        (3, 0),
         (4, 0),
+        (3, 0),
         (2, 0),
         (1, 0)
     ]
 )
-def test_binarization_output_parametrize(Rating, Top_Product):
-    test_binarization_output(Rating, Top_Product)
+
+def test_binarization_output_parametrize(rating, top_product):
+    """
+    Executes test_binarization_output for
+    each pair on parametrize
+    Args:
+        Rating: The value on rating column
+        Top_Product:
+        - 1 if Rating == 5
+        - 0 otherwise
+    """
+    test_binarization_output(rating, top_product)
 
 
 def test_clean_df_output():
+    """
+    Checks if the whole integration of
+    dropping and binarization returns the
+    expected output.
+    """
+    # Create a sample dataframe size (2, 3)
+    data = [
+        ['good shirt', 5, 44],
+        [None, 4, 33]
+    ]
 
-    pass
+    dataframe = pd.DataFrame(
+        data=data, index=[1, 2],
+        columns=['Review Text', 'Rating', 'Age']
+    )
+    # Call the clean_df function
+    dataframe = clean_df(dataframe)
+    # Line with NaN value should be deleted
+    # Rating and Age column should be deleted
+    assert dataframe.shape == (1, 2)
+    assert 'Rating' not in dataframe.columns
+    assert 'Age' not in dataframe.columns
+    # Review Text and Top Product should exist
+    assert 'Review Text' in dataframe.columns
+    assert 'Top Product' in dataframe.columns
+    # The value of Top Product should be as expected
+    assert (dataframe['Top Product'] == 1).all()
