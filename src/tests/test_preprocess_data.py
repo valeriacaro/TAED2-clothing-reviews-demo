@@ -1,6 +1,6 @@
 """
 This module is created to test functions stored
-on src.data.preprocess_data
+on src/data/preprocess_data
 """
 
 import pandas as pd
