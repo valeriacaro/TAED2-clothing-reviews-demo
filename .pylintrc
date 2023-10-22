@@ -1,0 +1,5 @@
+[MESSAGES CONTROL]
+
+#E0611: No name 'argmax' in module 'torch' (no-name-in-module)
+
+disable=E0611
