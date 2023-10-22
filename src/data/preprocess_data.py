@@ -29,7 +29,7 @@ def dropping(dataframe: pd.DataFrame) -> pd.DataFrame:
     dataframe.drop(
         ["Unnamed: 0", "Title", "Positive Feedback Count", "Division Name",
          "Department Name", "Class Name", "Age",
-         "Clothing ID", "Rating"], axis=1, inplace=True
+         "Clothing ID", "Rating"], axis=1, errors='ignore', inplace=True
     )
     dataframe.drop_duplicates(inplace=True)
 
