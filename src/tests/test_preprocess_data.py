@@ -29,6 +29,16 @@ def test_dropping_output():
     assert 'Top Product' in dataframe.columns
 
 
+@pytest.mark.parametrize(
+    "rate, top",
+    [
+        (5, 1),
+        (4, 0),
+        (3, 0),
+        (2, 0),
+        (1, 0)
+    ]
+)
 def test_binarization_output(rate, top):
     """
     Checks if given a dataframe with
@@ -38,42 +48,16 @@ def test_binarization_output(rate, top):
     mapping.
     """
     # Create a sample dataframe
-    data = {
-        'Index': 1,
-        'Rating': rate
-    }
+    data = [[rate]]
+
     dataframe = pd.DataFrame(
-        data, index=['Index'], columns=['Rating']
+        data, index=[1], columns=['Rating']
     )
     # Call the binarization function
     dataframe = binarization(dataframe)
     # Check if the Top Product column has the expected value
     assert 'Top Product' in dataframe.columns
     assert (dataframe['Top Product'] == top).all()
-
-
-@pytest.mark.parametrize(
-    "rating, top_product",
-    [
-        (5, 1),
-        (4, 0),
-        (3, 0),
-        (2, 0),
-        (1, 0)
-    ]
-)
-
-def test_binarization_output_parametrize(rating, top_product):
-    """
-    Executes test_binarization_output for
-    each pair on parametrize
-    Args:
-        Rating: The value on rating column
-        Top_Product:
-        - 1 if Rating == 5
-        - 0 otherwise
-    """
-    test_binarization_output(rating, top_product)
 
 
 def test_clean_df_output():
