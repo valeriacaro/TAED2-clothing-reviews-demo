@@ -2,6 +2,7 @@
 This module is created to test functions stored
 on src.data.preprocess_data
 """
+
 import pandas as pd
 import pytest
 from src.data.preprocess_data import dropping, binarization, clean_df
