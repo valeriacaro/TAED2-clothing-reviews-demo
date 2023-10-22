@@ -1,5 +1,8 @@
 [MESSAGES CONTROL]
 
 #E0611: No name 'argmax' in module 'torch' (no-name-in-module)
+#R0902: Too many instance attributes (8/7) (too-many-instance-attributes)
+#R0913: Too many arguments (9/5) (too-many-arguments)
+#W0621: Redefining name 'x_train' from outer scope (line 164) (redefined-outer-name)
 
-disable=E0611
+disable=E0611,R0902,R0913,W0621
