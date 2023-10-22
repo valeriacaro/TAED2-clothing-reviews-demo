@@ -1,7 +1,8 @@
 '''
 This module is created to perform the test
 process on our model using the test data.
-It also computes some metrics.
+It also computes some metrics. It can be used
+only for getting predictions too
 '''
 
 import json
@@ -21,6 +22,9 @@ def prediction(eval_dataloader, model, test=False):
         - A DataLoader containing testing data.
         model (transformers.BertForSequenceClassification):
         - The machine learning model to be evaluated.
+        test (Boolean variable):
+        - True if we want to get test metrics
+        - False if we want to make predictions
 
     Returns:
         None
