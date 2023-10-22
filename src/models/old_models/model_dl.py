@@ -6,7 +6,7 @@ and all functions related to it.
 
 import torch
 
-class Dictionary(object):
+class Dictionary:
     """
     This class constructs a dictionary to map
     the tokens that encode the words to an index,
@@ -94,19 +94,19 @@ class CharRNNClassifier(torch.nn.Module):
         self.dropout = torch.nn.Dropout(0.2, inplace=True)
 
 
-    def forward(self, input, input_lengths):
+    def forward(self, user_input, input_lengths):
         """
                 Forward pass of the model.
 
                 Args:
-                    input (Tensor): Input sequences.
+                    user_input (Tensor): Input sequences.
                     input_lengths (Tensor): Lengths of input sequences.
 
                 Returns:
                     Tensor: Model output.
         """
         # T x B
-        encoded = self.embed(input)
+        encoded = self.embed(user_input)
         # T x B x E
         packed = torch.nn.utils.rnn.pack_padded_sequence(encoded, input_lengths)
         # Packed T x B x E
