@@ -4,5 +4,7 @@
 #R0902: Too many instance attributes (8/7) (too-many-instance-attributes)
 #R0913: Too many arguments (9/5) (too-many-arguments)
 #W0621: Redefining name 'x_train' from outer scope (line 164) (redefined-outer-name)
+#C0209: Formatting a regular string which could be an f-string (consider-using-f-string)
+#R1720: Unnecessary "else" after "raise", remove the "else" and de-indent the code inside it (no-else-raise)
 
-disable=E0611,R0902,R0913,W0621
+disable=E0611,R0902,R0913,W0621,C0209,R1720

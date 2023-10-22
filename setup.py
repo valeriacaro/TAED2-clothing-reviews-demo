@@ -1,3 +1,8 @@
+"""
+This module is created to set our project up
+and define their authors.
+"""
+
 from setuptools import find_packages, setup
 
 setup(
