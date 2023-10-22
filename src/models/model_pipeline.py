@@ -40,7 +40,9 @@ if __name__ == '__main__':
 
     if TRAIN_ALL_MODEL:
         # Load model
-        model = AutoModelForSequenceClassification.from_pretrained("bert-base-cased", num_labels=2)
+        model = AutoModelForSequenceClassification.from_pretrained(
+            "bert-base-cased", num_labels=2
+        )
         training(train_dataloader, model)
     else:
         model = joblib.load(MODELS_DIR / 'transfer-learning.joblib', mmap_mode='r')
