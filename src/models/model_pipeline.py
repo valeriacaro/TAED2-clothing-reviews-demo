@@ -7,14 +7,15 @@ or load it from the repository.
 
 import joblib
 import torch
+from torch.utils.data import DataLoader
 from transformers import AutoModelForSequenceClassification
 from src import ROOT_PATH, PROCESSED_TRAIN_DATA_PATH, PROCESSED_TEST_DATA_PATH
-from src.models.train_model import stemming, preprocess_and_tokenize_data, training, DataLoader
+from src.models.train_model import stemming, preprocess_and_tokenize_data, training
 from src.models.test_model import score_function
 from src.data.get_and_save_data import get_data_from_local
 
-TRAIN_ALL_MODEL = False
-MODELS_DIR = ROOT_PATH / "models"
+TRAIN_ALL_MODEL = True
+MODELS_DIR = ROOT_PATH / "model"
 
 if __name__ == '__main__':
 
@@ -44,6 +45,7 @@ if __name__ == '__main__':
             "bert-base-cased", num_labels=2
         )
         training(train_dataloader, model)
+        joblib.dump(model, MODELS_DIR / 'transfer-learning.joblib')
     else:
         model = joblib.load(MODELS_DIR / 'transfer-learning.joblib', mmap_mode='r')
 
