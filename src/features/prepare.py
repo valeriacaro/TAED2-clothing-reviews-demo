@@ -1,9 +1,9 @@
-'''
+"""
 This module is created to take data from data/raw
 and process it. It excludes non-useful columns
 and processes text in order to remove stop words,
 delete punctuation and stem it.
-'''
+"""
 
 import os
 import yaml

@@ -1,9 +1,9 @@
-'''
+"""
 This module is created to unify all functions related
 to processing text in order to improve the results of
 our model. This includes tokenization and getting
 stemmed text.
-'''
+"""
 
 import string
 import re

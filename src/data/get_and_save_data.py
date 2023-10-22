@@ -1,7 +1,7 @@
-'''
+"""
 This module is created to unify all functions to
 retrieve/save data from the directories desired.
-'''
+"""
 
 import json
 import os

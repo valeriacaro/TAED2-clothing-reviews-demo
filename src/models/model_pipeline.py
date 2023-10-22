@@ -1,10 +1,9 @@
-'''
+"""
 This module is implemented to run the whole
 model pipeline on local, if desired. It
 includes options to train the model from zero
 or load it from the repository.
-'''
-
+"""
 
 import torch
 from torch.utils.data import DataLoader

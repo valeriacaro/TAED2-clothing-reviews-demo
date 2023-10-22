@@ -1,10 +1,10 @@
-'''
+"""
 This module is created to validate some data
 properties that we must ensure in order to
 expect the desired behaviour of these when
 giving them as input to the model. The module
 is implemented using great_expectations
-'''
+"""
 
 import great_expectations as gx
 import pandas as pd

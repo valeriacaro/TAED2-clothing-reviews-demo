@@ -1,9 +1,9 @@
-'''
+"""
 This module is created to unify all functions
 related to preprocess data before performing
 text processing on it. This includes removing
 some columns or mapping values.
-'''
+"""
 
 import pandas as pd
 from src import ROOT_PATH, RAW_DATA_PATH
