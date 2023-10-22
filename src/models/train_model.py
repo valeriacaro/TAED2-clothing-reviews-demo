@@ -1,29 +1,15 @@
-# IMPORTS
-# Data processing
-import pandas as pd
+'''
+This module is created to unify all function
+used to train our model, in order that, given
+a review as input, classifies the product
+with a 1 if is a top product and with a 0 otherwise.
+'''
 
-# Modeling
+import pandas as pd
 import torch
-from torch.utils.data import DataLoader
 from torch.optim import AdamW
 from transformers import AutoTokenizer, get_scheduler
-
-# Hugging Face Dataset
 from datasets import Dataset
-
-
-# FUNCTIONS
-def read_data(path_file) -> pd.DataFrame:
-    """
-    Read data from a CSV file.
-    Args:
-        path_file (str): The file path to the data.
-
-    Returns:
-        pd.DataFrame: A pandas DataFrame containing the data from the CSV file.
-
-    """
-    return pd.read_csv(path_file)
 
 
 def stemming(df, stem=True) -> pd.DataFrame:
@@ -33,8 +19,10 @@ def stemming(df, stem=True) -> pd.DataFrame:
         df (pd.DataFrame): The input DataFrame.
         stem (bool): A flag indicating whether stemming is applied.
 
-    Returns: A pd.DataFrame containing the feature variable (Review Text or Stemmed Review Text)
-            and the target variable (Top Product).
+    Returns:
+        - A pd.DataFrame containing the feature variable
+        (Review Text or Stemmed Review Text)
+        and the target variable (Top Product).
 
     """
     if stem:
@@ -46,7 +34,8 @@ def stemming(df, stem=True) -> pd.DataFrame:
 
 def tokenize_dataset(data) -> Dataset:
     """
-    Tokenizes "Review Text" data in a Hugging Face arrow dataset using a specified tokenizer.
+    Tokenizes "Review Text" data in a Hugging Face arrow dataset
+    using a specified tokenizer.
 
     Args:
         data (datasets.arrow_dataset.Dataset): The input Hugging Face arrow dataset.
@@ -58,15 +47,19 @@ def tokenize_dataset(data) -> Dataset:
     # Tokenizer from a pretrained model
     tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 
-    return tokenizer(data["Review Text"], max_length=128, truncation=True, padding="max_length")
+    return tokenizer(
+        data["Review Text"], max_length=128, truncation=True, padding="max_length"
+    )
 
 
 def tokenize_dataset_stem(data) -> Dataset:
     """
-    Tokenizes "Stemmed Review Text" data in a Hugging Face arrow dataset using a specified tokenizer.
+    Tokenizes "Stemmed Review Text" data in a Hugging Face arrow dataset
+    using a specified tokenizer.
 
     Args:
-        data (datasets.arrow_dataset.Dataset): the input Hugging Face arrow dataset.
+        data (datasets.arrow_dataset.Dataset):
+        - the input Hugging Face arrow dataset.
 
     Returns:
         datasets.arrow_dataset.Dataset: data tokenized.
@@ -75,7 +68,9 @@ def tokenize_dataset_stem(data) -> Dataset:
     # Tokenizer from a pretrained model
     tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 
-    return tokenizer(data["Stemmed Review Text"], max_length=128, truncation=True, padding="max_length")
+    return tokenizer(
+        data["Stemmed Review Text"], max_length=128, truncation=True, padding="max_length"
+    )
 
 
 def preprocess_and_tokenize_data(data, stem=True) -> Dataset:
@@ -102,7 +97,9 @@ def preprocess_and_tokenize_data(data, stem=True) -> Dataset:
         dataset = dataset.remove_columns(["Review Text"])
 
     # Rename label to labels because the model expects the name labels
-    dataset = dataset.rename_column("Top Product", "labels")
+    dataset = dataset.rename_column(
+        "Top Product", "labels"
+    )
 
     # Change the format to PyTorch tensors
     dataset.set_format("torch")
@@ -114,8 +111,10 @@ def training(train_dataloader, model):
     """
     Train a machine learning model using the provided DataLoader and model.
     Args:
-        train_dataloader (DataLoader): A DataLoader containing training data.
-        model (transformers.BertForSequenceClassification): The machine learning model to be trained.
+        train_dataloader (DataLoader):
+        - A DataLoader containing training data.
+        model (transformers.BertForSequenceClassification):
+        - The machine learning model to be trained.
 
     Returns:
         None
@@ -143,7 +142,8 @@ def training(train_dataloader, model):
     # Tells the model that we are training the model
     model.train()
     # Loop through the epochs
-    for epoch in range(num_epochs):
+    while num_epochs > 0:
+        num_epochs -= 1
         # Loop through the batches
         for batch in train_dataloader:
             # Compute the model output for the batch
@@ -160,7 +160,6 @@ def training(train_dataloader, model):
             optimizer.zero_grad()
 
 
-# MAIN
 if __name__ == '__main__':
 
     pass
