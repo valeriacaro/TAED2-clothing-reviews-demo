@@ -49,6 +49,7 @@ def binarization(dataframe: pd.DataFrame) -> pd.DataFrame:
     """
 
     dataframe.loc[dataframe['Rating'] <= 4, 'Recommended IND'] = 0
+    dataframe.loc[dataframe['Rating'] > 4, 'Recommended IND'] = 1
     dataframe.rename(
         columns={'Recommended IND': 'Top Product'}, inplace=True
     )
