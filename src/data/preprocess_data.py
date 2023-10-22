@@ -29,7 +29,7 @@ def dropping(dataframe: pd.DataFrame) -> pd.DataFrame:
     dataframe.drop(
         ["Unnamed: 0", "Title", "Positive Feedback Count", "Division Name",
          "Department Name", "Class Name", "Age",
-         "Clothing ID", "Rating"], axis=1, inplace=True
+         "Clothing ID", "Rating"], axis=1, errors='ignore', inplace=True
     )
     dataframe.drop_duplicates(inplace=True)
 
@@ -49,6 +49,7 @@ def binarization(dataframe: pd.DataFrame) -> pd.DataFrame:
     """
 
     dataframe.loc[dataframe['Rating'] <= 4, 'Recommended IND'] = 0
+    dataframe.loc[dataframe['Rating'] > 4, 'Recommended IND'] = 1
     dataframe.rename(
         columns={'Recommended IND': 'Top Product'}, inplace=True
     )
