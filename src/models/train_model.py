@@ -1,9 +1,9 @@
-'''
+"""
 This module is created to unify all function
 used to train our model, in order that, given
 a review as input, classifies the product
 with a 1 if is a top product and with a 0 otherwise.
-'''
+"""
 
 import pandas as pd
 import torch

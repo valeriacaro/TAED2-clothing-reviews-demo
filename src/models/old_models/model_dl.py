@@ -1,8 +1,21 @@
-import torch  # Deep learning framework
+"""
+This module is created to contain the classes
+related to the first deep learning model we tried
+and all functions related to it.
+"""
 
+import torch
 
 class Dictionary(object):
+    """
+    This class constructs a dictionary to map
+    the tokens that encode the words to an index,
+    and viceversa.
+    """
     def __init__(self):
+        """
+            Declare the initialization of the dictionary.
+        """
         self.token2idx = {}
         self.idx2token = []
 
@@ -11,7 +24,8 @@ class Dictionary(object):
             Add a token to the dictionary and return its index.
 
             Args:
-                token (str): The token to be added to the dictionary.
+                token (str):
+                - The token to be added to the dictionary.
 
             Returns:
                 int: The index of the added token.
@@ -32,9 +46,20 @@ class Dictionary(object):
 
 
 class CharRNNClassifier(torch.nn.Module):
-
-    def __init__(self, input_size, embedding_size, hidden_size, output_size, model="lstm", num_layers=4,
-                 bidirectional=False, pad_idx=0):
+    """
+    This class defines the RNN Classifier
+    itself.
+    """
+    def __init__(
+            self, input_size,
+            embedding_size,
+            hidden_size,
+            output_size,
+            model="lstm",
+            num_layers=4,
+            bidirectional=False,
+            pad_idx=0
+    ):
         """
                Initialize the Character RNN Classifier model.
 
@@ -58,9 +83,13 @@ class CharRNNClassifier(torch.nn.Module):
         self.num_directions = 2 if bidirectional else 1
         self.embed = torch.nn.Embedding(input_size, embedding_size, padding_idx=pad_idx)
         if self.model == "gru":
-            self.rnn = torch.nn.GRU(embedding_size, hidden_size, num_layers, bidirectional=bidirectional)
+            self.rnn = torch.nn.GRU(
+                embedding_size, hidden_size, num_layers, bidirectional=bidirectional
+            )
         elif self.model == "lstm":
-            self.rnn = torch.nn.LSTM(embedding_size, 2*hidden_size, num_layers, bidirectional=bidirectional)
+            self.rnn = torch.nn.LSTM(
+                embedding_size, 2*hidden_size, num_layers, bidirectional=bidirectional
+            )
         self.h2o = torch.nn.Linear(self.num_directions * hidden_size, output_size)
         self.dropout = torch.nn.Dropout(0.2, inplace=True)
 
@@ -83,7 +112,9 @@ class CharRNNClassifier(torch.nn.Module):
         # Packed T x B x E
         output, _ = self.rnn(packed)
         # Packed T x B x H
-        padded, _ = torch.nn.utils.rnn.pad_packed_sequence(output, padding_value=float('-inf'))
+        padded, _ = torch.nn.utils.rnn.pad_packed_sequence(
+            output, padding_value=float('-inf')
+        )
         # T x B x H
         output, _ = padded.max(dim=0)
         # Dropout
