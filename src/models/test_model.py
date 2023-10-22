@@ -27,7 +27,8 @@ def prediction(eval_dataloader, model, test=False):
         - False if we want to make predictions
 
     Returns:
-        None
+        - Computed accuracy if test=True
+        - Predictions otherwise
 
     """
     # Load the evaluation metric
