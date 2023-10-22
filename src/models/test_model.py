@@ -13,7 +13,7 @@ import torch.nn.functional as F
 from src import ROOT_PATH
 
 
-def evaluation(eval_dataloader, model):
+def prediction(eval_dataloader, model, test=False):
     """
 
     Args:
@@ -41,8 +41,6 @@ def evaluation(eval_dataloader, model):
     # A list for all predicted labels
     predictions_all = []
 
-    model = model.to('cpu')
-
     # Loop through the batches in the evaluation dataloader
     for batch in eval_dataloader:
         # Disable the gradient calculation
@@ -66,7 +64,11 @@ def evaluation(eval_dataloader, model):
         metric1.add_batch(
             predictions=predictions, references=batch["labels"]
         )
-    return metric1.compute()
+
+    if test:
+        return metric1.compute()
+
+    return predictions_all
 
 
 def score_function(eval_dataloader, model):
@@ -85,7 +87,7 @@ def score_function(eval_dataloader, model):
     # Path to the metrics folder
     Path("metrics").mkdir(exist_ok=True)
     metrics_folder_path = ROOT_PATH / "metrics"
-    accuracy = evaluation(eval_dataloader, model)
+    accuracy = prediction(eval_dataloader, model, test=True)
     # Create a dictionary to store the accuracy
     accuracy_dict = {"accuracy": accuracy}
     with open(
