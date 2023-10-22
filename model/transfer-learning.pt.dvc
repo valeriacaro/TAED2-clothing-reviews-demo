@@ -1,0 +1,4 @@
+outs:
+- md5: 73280bdd3af9eb4fc052e29b31c14bc0
+  size: 433374125
+  path: transfer-learning.pt

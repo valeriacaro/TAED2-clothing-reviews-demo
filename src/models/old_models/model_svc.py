@@ -98,7 +98,7 @@ def train_and_save_svc_model(x_train, y_train, stem=True):
     svc.fit(x_train, y_train)
 
     # Determine the model file name based on whether stemming is applied
-    filename = "models/model_svc_stem" if stem else "models/model_svc"
+    filename = "model/model_svc_stem" if stem else "model/model_svc"
 
     # Save the trained SVM model
     joblib.dump(svc, filename)
@@ -126,7 +126,7 @@ def loading(stem=True) -> SVC:
             SVC: The loaded SVM model.
     """
     # Determine the model file name based on whether stemming is applied
-    filename = "models/model_rf_stem" if stem else "models/model_rf"
+    filename = "model/model_rf_stem" if stem else "model/model_rf"
     # Load the model
     model = joblib.load(filename)
     return model
