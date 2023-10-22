@@ -1,88 +1,15 @@
-# IMPORTS
-import mlflow
-import pandas as pd
+"""
+This module is created to store all functions
+related to SVC model and get the model itself.
+"""
+
 import joblib
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import \
-    TfidfVectorizer  # TF-IDF are word frequency scores that try to highlight words that are more interesting,
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import precision_score
-from sklearn.metrics import recall_score
-from sklearn.metrics import f1_score
-from src.data.get_and_save_data import *
-
-
-# FUNCTIONS
-
-
-def tracking():
-    """
-        Set up MLflow tracking URI and enable automatic logging.
-
-        Returns:
-            None
-    """
-    mlflow.set_tracking_uri("https://github.com/MLOps-essi-upc/clothing-reviews/tree/develop/models")
-    mlflow.autolog()
-
-
-def stemming(df, stem=True) -> tuple:
-    """
-        Preprocesses data and selects features and target based on the stemming flag.
-        Args:
-            df (DataFrame): The input DataFrame.
-            stem (bool): A flag indicating whether stemming is applied.
-        Returns:
-            tuple: A tuple containing the feature variable (x) and the target variable (y).
-    """
-    if stem:
-        x = df["Stemmed Review Text"]
-    else:
-        x = df["Review Text"]
-    y = df["Top Product"]
-    return x, y
-
-
-def classification_task(model, x_train_scaled, y_train, x_test_scaled, y_test, predic, model_name):
-    """
-    Evaluates a classification model and returns performance metrics.
-    Args:
-        model: The trained classification model.
-        x_train_scaled: Scaled training features.
-        y_train: Training labels.
-        x_test_scaled: Scaled testing features.
-        y_test: Testing labels.
-        predic: Predicted labels.
-        model_name: Name of the model for identification in the results.
-    Returns:
-        DataFrame: Performance metrics including accuracy, precision, recall, F1-score.
-    """
-    perf_df = pd.DataFrame(
-        {'Train_Score': model.score(x_train_scaled, y_train),
-         'Test_Score': model.score(x_test_scaled, y_test),
-         'Precision_Score': precision_score(y_test, predic),
-         'Recall_Score': recall_score(y_test, predic),
-         'F1_Score': f1_score(y_test, predic),
-         'Accuracy': accuracy_score(y_test, predic)},
-        index=[model_name])
-    return perf_df
-
-
-def vectorization(x_train, x_test):
-    """
-    Converts text data into TF-IDF vector representations.
-    Args:
-        x_train: Training text data.
-        x_test: Testing text data.
-    Returns:
-        tuple: A tuple containing TF-IDF vectors for training and testing data.
-    """
-    tf_idf_vectorizer = TfidfVectorizer()
-    x_train_tf_idf = tf_idf_vectorizer.fit_transform(x_train)
-    x_test_tf_idf = tf_idf_vectorizer.transform(x_test)
-    return x_train_tf_idf, x_test_tf_idf
-
+from src.data.get_and_save_data import get_data_from_local
+from src.models.old_models.model_random_forest import (
+tracking, vectorization, classification_task, stemming
+)
+from src import PROCESSED_TEST_DATA_PATH, PROCESSED_TRAIN_DATA_PATH
 
 def train_and_save_svc_model(x_train, y_train, stem=True):
     """
@@ -133,31 +60,33 @@ def loading(stem=True) -> SVC:
 
 
 if __name__ == '__main__':
-    tracking()
 
-    # Read the preprocessed data
-    path_data = "./data/processed/processed_data.csv"
-    df = get_data_from_local(path_data)
+    tracking()
+    # Load and preprocess the data
+    test = get_data_from_local(PROCESSED_TEST_DATA_PATH)
+    train = get_data_from_local(PROCESSED_TRAIN_DATA_PATH)
 
     # Set this flag based on whether stemming is applied or not
-    use_stemming = True
-    x, y = stemming(df, use_stemming)
+    USE_STEMMING = True
+    x_train, y_train = stemming(test, USE_STEMMING)
+    x_test, y_test = stemming(test, USE_STEMMING)
 
-    # Split data into training and testing sets
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, stratify=y, random_state=101)
-
-    # Vectorize text data using TF-IDF
+    # Vectorize the text data
     x_train_tf_idf, x_test_tf_idf = vectorization(x_train, x_test)
 
     # Train and save the SVM model
-    train_and_save_svc_model(x_train_tf_idf, y_train, use_stemming)
+    train_and_save_svc_model(x_train_tf_idf, y_train, USE_STEMMING)
 
     # Load the trained model
-    loaded_model = loading(use_stemming)
+    loaded_model = loading(USE_STEMMING)
 
     # Predict
     pred_svc = prediction(loaded_model, x_test_tf_idf)
 
     # Evaluate and print the model's performance
-    eval_svc = classification_task(loaded_model, x_train_tf_idf, y_train, x_test_tf_idf, y_test, pred_svc, "SVC")
+    eval_svc = classification_task(
+        loaded_model, x_train_tf_idf,
+        y_train, x_test_tf_idf, y_test,
+        pred_svc, "SVC"
+    )
     print(eval_svc)
