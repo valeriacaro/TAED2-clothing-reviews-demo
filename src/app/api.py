@@ -194,7 +194,6 @@ def predict_sentiment(text: str):
 @app.post("/predict", response_model=SentimentResponse)
 def _predict(request: SentimentRequest):
     try:
-        print("comença predict")
         sentiment, prob = predict_sentiment(request.text)
         return SentimentResponse(sentiment=sentiment, probabilities=prob)
     except Exception as e:
