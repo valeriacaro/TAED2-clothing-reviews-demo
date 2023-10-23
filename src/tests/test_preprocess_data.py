@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 from src.data.preprocess_data import dropping, binarization, clean_df
 
+
 def test_dropping_output():
     """
     Checks if given a random dataframe
