@@ -26,9 +26,13 @@ def stemming(df, stem=True) -> pd.DataFrame:
 
     """
     if stem:
-        df.drop(['Review Text'], axis='columns', inplace=True)
+        df.drop(
+            ['Review Text'], axis='columns', errors='ignore', inplace=True
+        )
     else:
-        df.drop(['Stemmed Review Text'], axis='columns', inplace=True)
+        df.drop(
+            ['Stemmed Review Text'], axis='columns', errors='ignore', inplace=True
+        )
     return df
 
 

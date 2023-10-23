@@ -35,7 +35,7 @@ def prediction(eval_dataloader, model, test=False):
     # Load the evaluation metric
     metric1 = evaluate.load("accuracy")
 
-    # Tells the model that we are evaluting the model performance
+    # Tells the model that we are evaluating the model performance
     model.eval()
 
     #  A list for all logits

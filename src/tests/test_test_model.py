@@ -5,6 +5,8 @@ performance.
 
 import os
 import json
+
+import pandas as pd
 import pytest
 import torch
 from torch.utils.data import DataLoader
@@ -14,14 +16,17 @@ from src.models.train_model import stemming, preprocess_and_tokenize_data
 from src import PROCESSED_TEST_DATA_PATH, ROOT_PATH
 
 
-def mock_dataloader():
+def mock_dataloader(source: pd.DataFrame):
     """
     Creates a mock DataLoader for the evaluation performed
-    on test_score_function_output.
+    on test_score_function_output and test_prediction_output.
+
+    Args:
+        source: which dataframe take
     """
 
     use_stemming = True
-    test_data = get_data_from_local(PROCESSED_TEST_DATA_PATH / "test_data.csv")
+    test_data = source
     test_data = stemming(test_data, use_stemming)
     dataset_test = preprocess_and_tokenize_data(test_data, use_stemming)
     eval_dataloader = DataLoader(dataset=dataset_test, batch_size=4)
@@ -29,15 +34,18 @@ def mock_dataloader():
     return eval_dataloader
 
 
-def mock_load_model():
+def mock_load_model(device: str):
     """
     Creates a mock model for the evaluation performed
-    on test_score_function_output.
+    on test_score_function_output and test_prediction_output
+
+    Args:
+        device: where device to set the model (cpu or gpu)
     """
 
     models_path = ROOT_PATH / "model"
     model = torch.load(
-        models_path / 'transfer-learning.pt', map_location=torch.device('cuda')
+        models_path / 'transfer-learning.pt', map_location=torch.device(device)
     )
 
     return model
@@ -53,8 +61,9 @@ def test_score_function_output():
     the accuracy metric of the model loaded.
     """
 
-    mock_eval_dataloader = mock_dataloader()
-    mock_model = mock_load_model()
+    data = get_data_from_local(PROCESSED_TEST_DATA_PATH / "test_data.csv")
+    mock_eval_dataloader = mock_dataloader(data)
+    mock_model = mock_load_model('gpu')
 
     score_function(mock_eval_dataloader, mock_model)
 
@@ -77,3 +86,26 @@ def test_accuracy_metric():
     # Check if the "accuracy" key exists and the value is above 0.75
     assert "accuracy" in scores
     assert scores["accuracy"]["accuracy"] > 0.75
+
+
+def test_prediction_output():
+
+    data = [
+        ['beauti top uniqu ordinari bought usual medium found '
+         'fit tight across chest although babi year nurs could '
+         'bought would size', 1]
+    ]
+
+    test_data = pd.DataFrame(
+        data, index=None, columns=['Stemmed Review Text', 'Top Product']
+    )
+
+    eval_dataloader = mock_dataloader(test_data)
+
+    model = mock_load_model('cpu')
+
+    predict = prediction(eval_dataloader, model)
+
+    assert isinstance(predict, list)
+    assert len(predict) == 1
+    assert predict[0] == 1
