@@ -92,8 +92,8 @@ def test_accuracy_metric():
 def test_prediction_minimum_functionality():
     """
     This tests if the output of prediction function
-    is a list as expected and if it behaviours well
-    given an input.
+    is a tensor list as expected and if it behaviours
+    well given an input.
     """
 
     data = [
