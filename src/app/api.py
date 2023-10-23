@@ -97,28 +97,6 @@ def _get_models_list(request: Request, type: str = None):
         }
 
 
-def tokenize_dataset_stem(data) -> Dataset:
-    """
-    Tokenizes "Stemmed Review Text" data in a Hugging Face arrow dataset
-    using a specified tokenizer.
-
-    Args:
-        data (datasets.arrow_dataset.Dataset):
-        - the input Hugging Face arrow dataset.
-
-    Returns:
-        datasets.arrow_dataset.Dataset: data tokenized.
-
-    """
-    # Tokenizer from a pretrained model
-    print("tokenizer")
-    tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
-
-    return tokenizer(
-        data['Review Text'], max_length=128, truncation=True, padding="max_length"
-    )
-
-
 def preprocess(data) -> Dataset:
 
     words = data.split()
@@ -127,7 +105,7 @@ def preprocess(data) -> Dataset:
     hg_data = Dataset.from_pandas(data)
 
     # Tokenize the data sets
-    dataset = hg_data.map(tokenize_dataset_stem)
+    dataset = hg_data.map(tokenize_dataset)
     # Remove the review and index columns because it will not be used in the model
     dataset = dataset.remove_columns(["Review Text"])
     # Change the format to PyTorch tensors
