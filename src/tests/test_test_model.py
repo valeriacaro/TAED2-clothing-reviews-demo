@@ -5,7 +5,6 @@ performance.
 
 import os
 import json
-
 import pandas as pd
 import pytest
 import torch
@@ -19,7 +18,8 @@ from src import PROCESSED_TEST_DATA_PATH, ROOT_PATH
 def mock_dataloader(source: pd.DataFrame):
     """
     Creates a mock DataLoader for the evaluation performed
-    on test_score_function_output and test_prediction_output.
+    on test_score_function_output and test_prediction_minimum_functionality,
+    test_prediction_invariance and test_prediction_directional.
 
     Args:
         source: which dataframe take
@@ -37,7 +37,8 @@ def mock_dataloader(source: pd.DataFrame):
 def mock_load_model(device: str):
     """
     Creates a mock model for the evaluation performed
-    on test_score_function_output and test_prediction_output
+    on test_score_function_output and test_prediction_minimum_functionality,
+    test_prediction_invariance and test_prediction_directional
 
     Args:
         device: where device to set the model (cpu or gpu)
@@ -88,7 +89,12 @@ def test_accuracy_metric():
     assert scores["accuracy"]["accuracy"] > 0.75
 
 
-def test_prediction_output():
+def test_prediction_minimum_functionality():
+    """
+    This tests if the output of prediction function
+    is a tensor list as expected and if it behaviours
+    well given an input.
+    """
 
     data = [
         ['beauti top uniqu ordinari bought usual medium found '
@@ -107,5 +113,68 @@ def test_prediction_output():
     predict = prediction(eval_dataloader, model)
 
     assert isinstance(predict, list)
+    isinstance(predict[0], torch.Tensor)
     assert len(predict) == 1
     assert predict[0] == 1
+
+
+@pytest.mark.parametrize(
+    "sentence1, sentence2, result",
+    [
+        ('hate shirt', 'hate skirt', 0),
+        ('Maria love dress', 'Marwa love dress', 1)
+    ]
+)
+def test_prediction_invariance(sentence1, sentence2, result):
+    """
+    Tests if the model is invariant to non-important words
+    Args:
+        sentence1: sentence with some sentyment
+        sentence2: sentence1 with a non-important word changed
+        result: which outputs is exepcted
+    """
+
+    data = [
+        [sentence1, result],
+        [sentence2, result]
+    ]
+
+    test_data = pd.DataFrame(
+        data, index=None, columns=['Stemmed Review Text', 'Top Product']
+    )
+
+    eval_dataloader = mock_dataloader(test_data)
+
+    model = mock_load_model('cpu')
+
+    predict = prediction(eval_dataloader, model)
+
+    assert predict[0][0] == result
+    assert predict[0][0] == predict[0][1]
+
+
+def test_prediction_directional():
+    """
+    Tests if our model receives direction of sentences.
+    By changing an important sentyment word, it should
+    return different outputs.
+    """
+
+    data = [
+        ['hate skirt', 0],
+        ['love skirt', 1]
+    ]
+
+    test_data = pd.DataFrame(
+        data, index=None, columns=['Stemmed Review Text', 'Top Product']
+    )
+
+    eval_dataloader = mock_dataloader(test_data)
+
+    model = mock_load_model('cpu')
+
+    predict = prediction(eval_dataloader, model)
+
+    assert predict[0][0] == 0
+    assert predict[0][1] == 1
+    assert predict[0][0] != predict[0][1]
