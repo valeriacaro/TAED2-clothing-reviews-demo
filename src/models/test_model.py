@@ -8,6 +8,7 @@ only for getting predictions too
 import json
 from pathlib import Path
 import evaluate
+import mlflow
 import torch
 from torch import argmax
 import torch.nn.functional as F
@@ -93,6 +94,7 @@ def score_function(eval_dataloader, model):
     Path("metrics").mkdir(exist_ok=True)
     metrics_folder_path = ROOT_PATH / "metrics"
     accuracy = prediction(eval_dataloader, model, test=True)
+    mlflow.log_metrics(accuracy)
     # Create a dictionary to store the accuracy
     accuracy_dict = {"accuracy": accuracy}
     with open(
