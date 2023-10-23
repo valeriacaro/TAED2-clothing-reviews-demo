@@ -107,7 +107,7 @@ def preprocess_and_tokenize_data(data, stem=True) -> Dataset:
     return dataset
 
 
-def training(train_dataloader, model):
+def training(train_dataloader, model, which_device='cpu'):
     """
     Train a machine learning model using the provided DataLoader and model.
     Args:
@@ -135,8 +135,12 @@ def training(train_dataloader, model):
                                  num_warmup_steps=0,
                                  num_training_steps=num_training_steps)
 
-    # Use GPU if it is available
-    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    if which_device == 'cpu':
+        device = torch.device('cpu')
+    else:
+        # Use GPU if it is available
+        device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+
     model.to(device)
 
     # Tells the model that we are training the model

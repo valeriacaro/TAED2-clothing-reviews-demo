@@ -4,8 +4,21 @@ src/models/train_model.py
 """
 
 import pandas as pd
+import torch
+import pytest
 from datasets import Dataset
-from src.models.train_model import stemming, tokenize_dataset, tokenize_dataset_stem
+from torch.utils.data import DataLoader
+from transformers import AutoModelForSequenceClassification
+from src.models.train_model import (
+    stemming,
+    tokenize_dataset,
+    tokenize_dataset_stem,
+    training,
+    preprocess_and_tokenize_data
+)
+from src.data.get_and_save_data import get_data_from_local
+from src import PROCESSED_TRAIN_DATA_PATH
+
 
 def test_stemming_output():
     """
@@ -67,3 +80,48 @@ def test_tokenize_dataset_stem_output():
     for column in expected_columns:
         assert column in tokenized_dataset
     assert len(tokenized_dataset) > 0
+
+
+def mock_dataloader():
+    """
+    This creates a mock dataloader for being used
+    on test_training function.
+    """
+
+    train_data = get_data_from_local(PROCESSED_TRAIN_DATA_PATH / "train_data.csv")
+    use_stemming = True
+    train_data = stemming(train_data, use_stemming)
+    dataset_train = preprocess_and_tokenize_data(train_data, use_stemming)
+    train_dataloader = DataLoader(dataset=dataset_train, shuffle=True, batch_size=4)
+
+    return train_dataloader
+
+
+def mock_model_pretrained():
+    """
+    This created a mock model to use it
+    on test_training function
+    """
+
+    model = AutoModelForSequenceClassification.from_pretrained(
+        "bert-base-cased", num_labels=2
+    )
+
+    return model
+
+
+@pytest.mark.skipif(
+    not torch.cuda.is_available(),
+    reason="Full evaluation test requires a GPU."
+)
+def test_training():
+    """
+    This tests if the model training is ensured
+    by using cpu either gpu
+    """
+
+    mock_train_dataloader = mock_dataloader()
+    mock_model = mock_model_pretrained()
+
+    assert training(mock_train_dataloader, mock_model, which_device='cpu')
+    assert training(mock_train_dataloader, mock_model, which_device='gpu')
