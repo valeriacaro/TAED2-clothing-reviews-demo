@@ -113,6 +113,7 @@ def test_prediction_minimum_functionality():
     predict = prediction(eval_dataloader, model)
 
     assert isinstance(predict, list)
+    isinstance(predict[0], torch.Tensor)
     assert len(predict) == 1
     assert predict[0] == 1
 
